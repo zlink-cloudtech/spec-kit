@@ -7,6 +7,7 @@
 #     "platformdirs",
 #     "readchar",
 #     "httpx",
+#     "truststore",
 # ]
 # ///
 """
@@ -34,6 +35,8 @@ import shlex
 import json
 from pathlib import Path
 from typing import Optional, Tuple
+from urllib.parse import urlparse, unquote
+from urllib.request import url2pathname
 
 import typer
 import httpx
@@ -634,15 +637,64 @@ def merge_json_files(existing_path: Path, new_content: dict, verbose: bool = Fal
 
     return merged
 
-def download_template_from_github(ai_assistant: str, download_dir: Path, *, script_type: str = "sh", verbose: bool = True, show_progress: bool = True, client: httpx.Client = None, debug: bool = False, github_token: str = None) -> Tuple[Path, dict]:
+def download_template_from_github(ai_assistant: str, download_dir: Path, *, script_type: str = "sh", verbose: bool = True, show_progress: bool = True, client: httpx.Client = None, debug: bool = False, github_token: str = None, template_url: str = None) -> Tuple[Path, dict]:
     repo_owner = "github"
     repo_name = "spec-kit"
     if client is None:
         client = httpx.Client(verify=ssl_context)
 
-    if verbose:
-        console.print("[cyan]Fetching latest release information...[/cyan]")
-    api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
+    # Handle local file:// URL
+    if template_url and template_url.startswith("file://"):
+        if verbose:
+            console.print(f"[cyan]Using local template source:[/cyan] {template_url}")
+        
+        parsed = urlparse(template_url)
+        path_str = url2pathname(unquote(parsed.path))
+        source_dir = Path(path_str)
+
+        if not source_dir.is_dir():
+             raise RuntimeError(f"Template source must be a directory for file:// URLs: {source_dir}")
+
+        pattern = f"spec-kit-template-{ai_assistant}-{script_type}"
+        # Find matching asset in directory
+        matching_files = [
+            f for f in source_dir.iterdir()
+            if f.is_file() and pattern in f.name and f.name.endswith(".zip")
+        ]
+        
+        if not matching_files:
+            console.print(f"[red]No matching template found in[/red] {source_dir}")
+            console.print(f"[red]Expected pattern:[/red] {pattern}*.zip")
+            raise typer.Exit(1)
+            
+        source_file = matching_files[0]
+        filename = source_file.name
+        file_size = source_file.stat().st_size
+        
+        if verbose:
+            console.print(f"[cyan]Found local template:[/cyan] {filename}")
+            console.print(f"[cyan]Copying template...[/cyan]")
+            
+        zip_path = download_dir / filename
+        shutil.copy2(source_file, zip_path)
+        
+        metadata = {
+            "filename": filename,
+            "size": file_size,
+            "release": "local",
+            "asset_url": template_url
+        }
+        return zip_path, metadata
+
+    # Handle remote URL (custom API or GitHub default)
+    if template_url and (template_url.startswith("http://") or template_url.startswith("https://")):
+        if verbose:
+            console.print(f"[cyan]Using custom template API:[/cyan] {template_url}")
+        api_url = template_url
+    else:
+        if verbose:
+            console.print("[cyan]Fetching latest release information...[/cyan]")
+        api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
 
     try:
         response = client.get(
@@ -748,14 +800,14 @@ def download_template_from_github(ai_assistant: str, download_dir: Path, *, scri
     }
     return zip_path, metadata
 
-def download_and_extract_template(project_path: Path, ai_assistant: str, script_type: str, is_current_dir: bool = False, *, verbose: bool = True, tracker: StepTracker | None = None, client: httpx.Client = None, debug: bool = False, github_token: str = None) -> Path:
+def download_and_extract_template(project_path: Path, ai_assistant: str, script_type: str, is_current_dir: bool = False, *, verbose: bool = True, tracker: StepTracker | None = None, client: httpx.Client = None, debug: bool = False, github_token: str = None, template_url: str = None) -> Path:
     """Download the latest release and extract it to create a new project.
     Returns project_path. Uses tracker if provided (with keys: fetch, download, extract, cleanup)
     """
     current_dir = Path.cwd()
 
     if tracker:
-        tracker.start("fetch", "contacting GitHub API")
+        tracker.start("fetch", "contacting GitHub API" if not template_url else "checking template source")
     try:
         zip_path, meta = download_template_from_github(
             ai_assistant,
@@ -765,11 +817,12 @@ def download_and_extract_template(project_path: Path, ai_assistant: str, script_
             show_progress=(tracker is None),
             client=client,
             debug=debug,
-            github_token=github_token
+            github_token=github_token,
+            template_url=template_url
         )
         if tracker:
             tracker.complete("fetch", f"release {meta['release']} ({meta['size']:,} bytes)")
-            tracker.add("download", "Download template")
+            tracker.add("download", "Download template" if not template_url else "Prepare template")
             tracker.complete("download", meta['filename'])
     except Exception as e:
         if tracker:
@@ -954,6 +1007,7 @@ def init(
     skip_tls: bool = typer.Option(False, "--skip-tls", help="Skip SSL/TLS verification (not recommended)"),
     debug: bool = typer.Option(False, "--debug", help="Show verbose diagnostic output for network and extraction failures"),
     github_token: str = typer.Option(None, "--github-token", help="GitHub token to use for API requests (or set GH_TOKEN or GITHUB_TOKEN environment variable)"),
+    template_url: str = typer.Option(None, "--template-url", help="URL or local path (file://) to template directory (overrides GitHub release)"),
 ):
     """
     Initialize a new Specify project from the latest template.
@@ -1101,9 +1155,14 @@ def init(
     tracker.complete("ai-select", f"{selected_ai}")
     tracker.add("script-select", "Select script type")
     tracker.complete("script-select", selected_script)
+    
+    # Adjust labels for local template
+    fetch_label = "Fetch latest release" if not template_url else "Locate template"
+    download_label = "Download template" if not template_url else "Prepare template"
+
     for key, label in [
-        ("fetch", "Fetch latest release"),
-        ("download", "Download template"),
+        ("fetch", fetch_label),
+        ("download", download_label),
         ("extract", "Extract template"),
         ("zip-list", "Archive contents"),
         ("extracted-summary", "Extraction summary"),
@@ -1124,7 +1183,7 @@ def init(
             local_ssl_context = ssl_context if verify else False
             local_client = httpx.Client(verify=local_ssl_context)
 
-            download_and_extract_template(project_path, selected_ai, selected_script, here, verbose=False, tracker=tracker, client=local_client, debug=debug, github_token=github_token)
+            download_and_extract_template(project_path, selected_ai, selected_script, here, verbose=False, tracker=tracker, client=local_client, debug=debug, github_token=github_token, template_url=template_url)
 
             ensure_executable_scripts(project_path, tracker=tracker)
 
