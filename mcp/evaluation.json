@@ -1,0 +1,10 @@
+[
+  {
+    "input": "List available prompts",
+    "expected_output": "translate-technical-document"
+  },
+  {
+    "input": "Get translate prompt for Spanish",
+    "expected_output": "Please translate the following technical document to Spanish"
+  }
+]
