@@ -188,6 +188,7 @@ The `specify` command supports the following options:
 | `--skip-tls`           | Flag     | Skip SSL/TLS verification (not recommended)                                                                                                                                                  |
 | `--debug`              | Flag     | Enable detailed debug output for troubleshooting                                                                                                                                             |
 | `--github-token`       | Option   | GitHub token for API requests (or set GH_TOKEN/GITHUB_TOKEN env variable)                                                                                                                    |
+| `--template-url`       | Option   | URL to a custom template repository (zip file) to use instead of the default                                                                                                                 |
 
 ### Examples
 
@@ -237,6 +238,11 @@ specify init my-project --ai claude --debug
 
 # Use GitHub token for API requests (helpful for corporate environments)
 specify init my-project --ai claude --github-token ghp_your_token_here
+
+# Initialize with a custom template
+specify init my-project --template-url https://example.com/template.zip
+# or local file URL
+specify init my-project --template-url file:///example.com/template.zip
 
 # Check system requirements
 specify check
