@@ -56,6 +56,8 @@ import ssl
 import truststore
 from datetime import datetime, timezone
 
+from .skills import Skills
+
 ssl_context = truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 client = httpx.Client(verify=ssl_context)
 
@@ -132,6 +134,10 @@ AGENT_CONFIG = {
         "folder": ".github/",
         "install_url": None,  # IDE-based, no CLI check needed
         "requires_cli": False,
+        "skills": {
+            "path": ".github/instructions/speckit-skills.instructions.md",
+            "format": "copilot-instructions",
+        },
     },
     "claude": {
         "name": "Claude Code",
@@ -204,6 +210,10 @@ AGENT_CONFIG = {
         "folder": ".roo/",
         "install_url": None,  # IDE-based
         "requires_cli": False,
+        "skills": {
+            "path": ".roo/rules/speckit-skills-rules.md",
+            "format": "markdown",
+        },
     },
     "q": {
         "name": "Amazon Q Developer CLI",
@@ -1032,6 +1042,8 @@ def init(
         specify init --here --ai codebuddy
         specify init --here
         specify init --here --force  # Skip confirmation when current directory not empty
+        specify init --here --template-url file:///path/to/local/templates # Use local template source
+        specify init --here --template-url https://custom-server.com/api/template # Use custom template API
     """
 
     show_banner()
@@ -1167,6 +1179,7 @@ def init(
         ("zip-list", "Archive contents"),
         ("extracted-summary", "Extraction summary"),
         ("chmod", "Ensure scripts executable"),
+        ("skills", "Install skills"),
         ("cleanup", "Cleanup"),
         ("git", "Initialize git repository"),
         ("final", "Finalize")
@@ -1186,6 +1199,25 @@ def init(
             download_and_extract_template(project_path, selected_ai, selected_script, here, verbose=False, tracker=tracker, client=local_client, debug=debug, github_token=github_token, template_url=template_url)
 
             ensure_executable_scripts(project_path, tracker=tracker)
+
+            tracker.start("skills")
+            try:
+                agent_config = AGENT_CONFIG.get(selected_ai, {})
+                skills_config = agent_config.get("skills")
+                
+                if skills_config:
+                    path = project_path / skills_config["path"]
+                    format = skills_config["format"]
+                    
+                    Skills(project_path).install(
+                        path=path,
+                        format=format
+                    )
+                    tracker.complete("skills", "installed")
+                else:
+                    tracker.complete("skills", "skipped (not supported)")
+            except Exception as e:
+                tracker.error("skills", str(e))
 
             if not no_git:
                 tracker.start("git")

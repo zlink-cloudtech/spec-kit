@@ -29,25 +29,25 @@ Specify supports multiple AI agents by generating agent-specific command files a
 
 ### Current Supported Agents
 
-| Agent                      | Directory              | Format   | CLI Tool        | Description                 |
-| -------------------------- | ---------------------- | -------- | --------------- | --------------------------- |
-| **Claude Code**            | `.claude/commands/`    | Markdown | `claude`        | Anthropic's Claude Code CLI |
-| **Gemini CLI**             | `.gemini/commands/`    | TOML     | `gemini`        | Google's Gemini CLI         |
-| **GitHub Copilot**         | `.github/agents/`      | Markdown | N/A (IDE-based) | GitHub Copilot in VS Code   |
-| **Cursor**                 | `.cursor/commands/`    | Markdown | `cursor-agent`  | Cursor CLI                  |
-| **Qwen Code**              | `.qwen/commands/`      | TOML     | `qwen`          | Alibaba's Qwen Code CLI     |
-| **opencode**               | `.opencode/command/`   | Markdown | `opencode`      | opencode CLI                |
-| **Codex CLI**              | `.codex/commands/`     | Markdown | `codex`         | Codex CLI                   |
-| **Windsurf**               | `.windsurf/workflows/` | Markdown | N/A (IDE-based) | Windsurf IDE workflows      |
-| **Kilo Code**              | `.kilocode/rules/`     | Markdown | N/A (IDE-based) | Kilo Code IDE               |
-| **Auggie CLI**             | `.augment/rules/`      | Markdown | `auggie`        | Auggie CLI                  |
-| **Roo Code**               | `.roo/rules/`          | Markdown | N/A (IDE-based) | Roo Code IDE                |
-| **CodeBuddy CLI**          | `.codebuddy/commands/` | Markdown | `codebuddy`     | CodeBuddy CLI               |
-| **Qoder CLI**              | `.qoder/commands/`     | Markdown | `qoder`         | Qoder CLI                   |
-| **Amazon Q Developer CLI** | `.amazonq/prompts/`    | Markdown | `q`             | Amazon Q Developer CLI      |
-| **Amp**                    | `.agents/commands/`    | Markdown | `amp`           | Amp CLI                     |
-| **SHAI**                   | `.shai/commands/`      | Markdown | `shai`          | SHAI CLI                    |
-| **IBM Bob**                | `.bob/commands/`       | Markdown | N/A (IDE-based) | IBM Bob IDE                 |
+| Agent                      | Directory              | Format   | CLI Tool        | Instruction Directory | Description                 |
+| -------------------------- | ---------------------- | -------- | --------------- | --------------------- | --------------------------- |
+| **Claude Code**            | `.claude/commands/`    | Markdown | `claude`        | N/A                   | Anthropic's Claude Code CLI |
+| **Gemini CLI**             | `.gemini/commands/`    | TOML     | `gemini`        | N/A                   | Google's Gemini CLI         |
+| **GitHub Copilot**         | `.github/agents/`      | Markdown | N/A (IDE-based) | `.github/instructions/` | GitHub Copilot in VS Code   |
+| **Cursor**                 | `.cursor/commands/`    | Markdown | `cursor-agent`  | N/A                   | Cursor CLI                  |
+| **Qwen Code**              | `.qwen/commands/`      | TOML     | `qwen`          | N/A                   | Alibaba's Qwen Code CLI     |
+| **opencode**               | `.opencode/command/`   | Markdown | `opencode`      | N/A                   | opencode CLI                |
+| **Codex CLI**              | `.codex/commands/`     | Markdown | `codex`         | N/A                   | Codex CLI                   |
+| **Windsurf**               | `.windsurf/workflows/` | Markdown | N/A (IDE-based) | N/A                   | Windsurf IDE workflows      |
+| **Kilo Code**              | `.kilocode/rules/`     | Markdown | N/A (IDE-based) | N/A                   | Kilo Code IDE               |
+| **Auggie CLI**             | `.augment/rules/`      | Markdown | `auggie`        | N/A                   | Auggie CLI                  |
+| **Roo Code**               | `.roo/rules/`          | Markdown | N/A (IDE-based) | N/A                   | Roo Code IDE                |
+| **CodeBuddy CLI**          | `.codebuddy/commands/` | Markdown | `codebuddy`     | N/A                   | CodeBuddy CLI               |
+| **Qoder CLI**              | `.qoder/commands/`     | Markdown | `qoder`         | N/A                   | Qoder CLI                   |
+| **Amazon Q Developer CLI** | `.amazonq/prompts/`    | Markdown | `q`             | N/A                   | Amazon Q Developer CLI      |
+| **Amp**                    | `.agents/commands/`    | Markdown | `amp`           | N/A                   | Amp CLI                     |
+| **SHAI**                   | `.shai/commands/`      | Markdown | `shai`          | N/A                   | SHAI CLI                    |
+| **IBM Bob**                | `.bob/commands/`       | Markdown | N/A (IDE-based) | N/A                   | IBM Bob IDE                 |
 
 ### Step-by-Step Integration Guide
 
@@ -67,6 +67,11 @@ AGENT_CONFIG = {
         "folder": ".newagent/",  # Directory for agent files
         "install_url": "https://example.com/install",  # URL for installation docs (or None if IDE-based)
         "requires_cli": True,  # True if CLI tool required, False for IDE-based agents
+        # Optional: Skills configuration (currently only for Copilot)
+        # "skills": {
+        #     "path": ".newagent/instructions/skills.md",
+        #     "format": "copilot-instructions",
+        # },
     },
 }
 ```
@@ -84,6 +89,7 @@ This eliminates the need for special-case mappings throughout the codebase.
 - `folder`: Directory where agent-specific files are stored (relative to project root)
 - `install_url`: Installation documentation URL (set to `None` for IDE-based agents)
 - `requires_cli`: Whether the agent requires a CLI tool check during initialization
+- `skills`: (Optional) Configuration for skills integration (currently only for Copilot)
 
 #### 2. Update CLI Help Text
 
@@ -204,6 +210,40 @@ elif selected_ai == "windsurf":
 ```
 
 **Note**: CLI tool checks are now handled automatically based on the `requires_cli` field in AGENT_CONFIG. No additional code changes needed in the `check()` or `init()` commands - they automatically loop through AGENT_CONFIG and check tools as needed.
+
+## Adding New Skills for Agents
+
+Skills are specialized capabilities that provide AI agents with specific workflows, instructions, and strategies for complex tasks.
+
+### Development Process
+
+1.  **Bootstrap with Skill Creator**
+    Use the `skill-creator` skill to generate the initial structure. This ensures consistency and adherence to best practices.
+
+2.  **Create Skill Directory**
+    Create a new directory in the `skills/` folder.
+    *   **Naming Convention**: Use **kebab-case** (all lowercase, hyphen-separated).
+    *   Example: `skills/my-new-skill/`
+
+3.  **Implement Skill Logic**
+    Follow the specifications defined in the `skill-creator` skill. A standard skill typically includes:
+    *   `SKILL.md`: The core definition and instructions for the agent.
+    *   `scripts/`: Python or shell scripts that the agent can execute.
+    *   `reference/`: Contextual documentation.
+
+4.  **Configure Agent (if needed)**
+    Ensure the target agent is configured to receive the skills instructions. In `src/specify_cli/__init__.py`, the agent's entry in `AGENT_CONFIG` must have a `skills` block:
+
+    ```python
+    "copilot": {
+        # ...
+        "skills": {
+            "path": ".github/instructions/speckit-skills.instructions.md",
+            "format": "copilot-instructions",
+        },
+    }
+    ```
+    *Note: The `Skills` generator automatically discovers all valid skills in the `skills/` directory and adds them to the generated instruction file.*
 
 ## Important Design Decisions
 
@@ -364,11 +404,39 @@ Command content with {SCRIPT} and {{args}} placeholders.
 """
 ```
 
+## Instruction File Formats
+
+### copilot-instructions Format
+
+Used by: GitHub Copilot
+
+```markdown
+---
+name: Instruction Name
+description: Description of the instruction
+applyTo: "**"
+---
+
+Instruction content...
+```
+
+### markdown Format
+
+Used by: Other agents (if applicable)
+
+```markdown
+---
+description: Description of the instruction
+---
+
+Instruction content...
+```
+
 ## Directory Conventions
 
 - **CLI agents**: Usually `.<agent-name>/commands/`
 - **IDE agents**: Follow IDE-specific patterns:
-  - Copilot: `.github/agents/`
+  - Copilot: `.github/agents/` (commands) and `.github/instructions/` (instructions)
   - Cursor: `.cursor/commands/`
   - Windsurf: `.windsurf/workflows/`
 
