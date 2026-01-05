@@ -1,29 +1,50 @@
-<!--
-Sync Impact Report:
-- Version change: 0.0.0 -> 1.0.0
-- Modified principles: Defined I (Code Quality), II (Testing Standards), III (UX Consistency), IV (Performance).
-- Added sections: None.
-- Removed sections: Unused template sections.
-- Templates requiring updates: templates/tasks-template.md (✅ updated).
--->
-# Spec Kit Constitution
+# [PROJECT_NAME] Constitution
+<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
 
 ## Core Principles
 
-### I. Code Quality
-Code must be clean, maintainable, and self-documenting. Adherence to language-specific style guides (e.g., PEP 8 for Python, ESLint for JavaScript) is mandatory. Type hinting must be used where available to ensure type safety and improve developer experience. Modular design with clear separation of concerns is required to facilitate maintainability and extensibility.
+### [PRINCIPLE_1_NAME]
+<!-- Example: I. Library-First -->
+[PRINCIPLE_1_DESCRIPTION]
+<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
 
-### II. Testing Standards
-Testing is not optional; it is a core part of the development process. High test coverage is required for all new features and bug fixes. Tests must be deterministic and independent. Unit tests should cover core logic, while integration tests must verify the interaction between components (e.g., CLI commands, Agents). A "Spec-First" approach implies that tests should ideally be derived from the specifications.
+### [PRINCIPLE_2_NAME]
+<!-- Example: II. CLI Interface -->
+[PRINCIPLE_2_DESCRIPTION]
+<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
 
-### III. User Experience Consistency
-The user experience must be consistent across all interfaces. CLI commands must follow a unified argument parsing structure and output format. Error messages must be clear, actionable, and friendly, guiding the user to a solution. Documentation must be kept in sync with the code to ensure a reliable source of truth for users.
+### [PRINCIPLE_3_NAME]
+<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
+[PRINCIPLE_3_DESCRIPTION]
+<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
 
-### IV. Performance Requirements
-Performance is a key feature. CLI commands must start up quickly to ensure a responsive user experience. Agent interactions should be optimized for latency and efficiency. Dependencies should be kept to a minimum to reduce installation size and time, ensuring the toolkit remains lightweight and fast.
+### [PRINCIPLE_4_NAME]
+<!-- Example: IV. Integration Testing -->
+[PRINCIPLE_4_DESCRIPTION]
+<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+
+### [PRINCIPLE_5_NAME]
+<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
+[PRINCIPLE_5_DESCRIPTION]
+<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+
+## [SECTION_2_NAME]
+<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+
+[SECTION_2_CONTENT]
+<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+
+## [SECTION_3_NAME]
+<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+
+[SECTION_3_CONTENT]
+<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
 
 ## Governance
+<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-This constitution supersedes all other practices. Amendments require documentation, approval, and a migration plan. All PRs and reviews must verify compliance with these principles. Complexity must be justified.
+[GOVERNANCE_RULES]
+<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
 
-**Version**: 1.0.0 | **Ratified**: 2026-01-04 | **Last Amended**: 2026-01-04
+**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
+<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
