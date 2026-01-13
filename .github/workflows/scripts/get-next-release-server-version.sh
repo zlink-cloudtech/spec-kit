@@ -5,9 +5,12 @@ set -euo pipefail
 # Calculate the next version for release-server based on the latest git tag
 # Usage: get-next-release-server-version.sh
 
-# Get the latest tag for release-server, or use v0.0.0 if no tags exist
-# Use --match "release-server-v[0-9]*" to filter only release-server tags
-LATEST_TAG=$(git describe --tags --match "release-server-v[0-9]*" --abbrev=0 2>/dev/null || echo "release-server-v0.0.0")
+# Get the latest tag for release-server using git tag sort for global visibility
+# Use --sort=-v:refname to get the highest version number regardless of commit reachability
+LATEST_TAG=$(git tag --list "release-server-v[0-9]*" --sort=-v:refname | head -n 1)
+if [ -z "$LATEST_TAG" ]; then
+    LATEST_TAG="release-server-v0.0.0"
+fi
 
 # If LATEST_TAG is release-server-v0.0.0 (default), check if there are any tags actually
 # If check fails, it defaults to v0.0.0.
