@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import List, Optional
 from fastapi import APIRouter, Depends, UploadFile, File, Query, status, Request, BackgroundTasks, Header
 from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse
@@ -8,6 +9,10 @@ from release_server.dependencies import get_package_service
 from release_server.storage import PackageMetadata
 
 router = APIRouter()
+
+class ResponseFormat(str, Enum):
+    JSON = "json"
+    HTML = "html"
 
 class Asset(BaseModel):
     name: str
@@ -96,7 +101,7 @@ async def upload_package(
 async def list_packages_negotiated(
     request: Request,
     accept: Optional[str] = Header(default="application/json"),
-    format: Optional[str] = Query(None),
+    format: Optional[ResponseFormat] = Query(None),
     package_service: PackageService = Depends(get_package_service)
 ):
     """
@@ -111,9 +116,9 @@ async def list_packages_negotiated(
     # Determine if HTML is requested
     want_html = False
     
-    if format == "html":
+    if format == ResponseFormat.HTML:
         want_html = True
-    elif format == "json":
+    elif format == ResponseFormat.JSON:
         want_html = False
     elif accept and "text/html" in accept:
         want_html = True
