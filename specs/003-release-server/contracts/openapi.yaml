@@ -112,6 +112,8 @@ paths:
             text/html:
               schema:
                 type: string
+        '422':
+          description: Validation Error
   /healthz:
     get:
       summary: Liveness check
