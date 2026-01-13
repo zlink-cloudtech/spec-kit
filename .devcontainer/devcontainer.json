@@ -23,6 +23,9 @@
 		},
 		"ghcr.io/devcontainers/features/node": {
 			"version": "lts"
+		},
+		"ghcr.io/devcontainers/features/github-cli:1": {
+			"version": "lts"
 		}
 	},
 
@@ -41,6 +44,7 @@
 		"eamodio.gitlens",
 		"anweber.reveal-button",
 		"chrisdias.promptboost",
+		"42Crunch.vscode-openapi",
 		// Github Copilot
 		"GitHub.copilot",
 		"GitHub.copilot-chat",

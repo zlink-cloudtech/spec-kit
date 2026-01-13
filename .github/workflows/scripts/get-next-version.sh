@@ -6,7 +6,8 @@ set -euo pipefail
 # Usage: get-next-version.sh
 
 # Get the latest tag, or use v0.0.0 if no tags exist
-LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+# Use --match "v[0-9]*" to filter only CLI release tags and avoid service tags like release-server-v*
+LATEST_TAG=$(git describe --tags --match "v[0-9]*" --abbrev=0 2>/dev/null || echo "v0.0.0")
 echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
 
 # Extract version number and increment

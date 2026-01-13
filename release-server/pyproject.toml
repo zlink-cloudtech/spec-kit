@@ -1,0 +1,43 @@
+[project]
+name = "release-server"
+version = "0.0.0"
+description = "Lightweight release server for Spec Kit templates"
+authors = [{name = "Spec Kit Team", email = "maintainers@spec-kit.org"}]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.109.0",
+    "uvicorn>=0.27.0",
+    "structlog>=24.1.0",
+    "python-multipart>=0.0.9",
+    "pyyaml>=6.0.1",
+    "pydantic-settings>=2.1.0",
+    "aiofiles>=23.2.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "httpx>=0.26.0",
+    "black>=24.1.0",
+    "isort>=5.13.0",
+    "mypy>=1.8.0",
+    "build>=1.4.0",
+    "schemathesis>=4.8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "-v"
+pythonpath = [
+    "src"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/release_server"]
