@@ -194,6 +194,8 @@ jobs:
           body_path: release_notes.md
           draft: false
           prerelease: false
+          # Monorepo component release: Do not mark as repo-wide "latest" (avoids timeout errors with non-standard prefixes)
+          make_latest: false
           files: |
             release-server/dist/*.whl
             release-server/dist/*.tar.gz
