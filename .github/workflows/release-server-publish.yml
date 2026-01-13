@@ -208,7 +208,13 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add release-server/pyproject.toml
-          git commit -m "chore(release-server): bump version to ${{ steps.version.outputs.VERSION }} [skip ci]"
-          git push origin main
+          
+          # Only commit pyproject.toml, ignoring other potential staged changes
+          git commit -m "chore(release-server): bump version to ${{ steps.version.outputs.VERSION }} [skip ci]" release-server/pyproject.toml
+          
+          if [ "${ACT}" == "true" ]; then
+            echo "Running in act, skipping git push"
+          else
+            git push origin main
+          fi
 
