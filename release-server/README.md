@@ -114,8 +114,13 @@ To avoid "frequent commits" when debugging GitHub Actions, you can use **[act](h
 
    ```bash
    # Run from project root
-   # Usage: ./script.sh [version]
+   # Usage: ./.github/workflows/scripts/test-release-server.sh [options] [version]
+
+   # Test complete workflow (Push event) - Default
    ./.github/workflows/scripts/test-release-server.sh
+
+   # Test validation only (Pull Request event)
+   ./.github/workflows/scripts/test-release-server.sh -e pull_request
    ```
 
    > **.secrets file content** (Required):
