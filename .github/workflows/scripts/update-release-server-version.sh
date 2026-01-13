@@ -15,11 +15,11 @@ VERSION="$1"
 VERSION=${VERSION#v}
 VERSION=${VERSION#release-server-v}
 
-# PEP 440 compliance: convert -test to .dev1
+# PEP 440 compliance: convert -test to .dev
 # Python tools (like uv) require PEP 440 versions in pyproject.toml
 if [[ "$VERSION" == *"-test" ]]; then
   BASE_VERSION="${VERSION%-test}"
-  VERSION="${BASE_VERSION}.dev1"
+  VERSION="${BASE_VERSION}.dev"
   echo "ℹ️  Converting test version to PEP 440 compliant: $VERSION"
 fi
 

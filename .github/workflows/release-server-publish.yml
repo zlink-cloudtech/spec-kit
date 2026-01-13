@@ -19,9 +19,43 @@ on:
         type: boolean
         default: false
 
+concurrency:
+  group: release-server-publish
+  cancel-in-progress: false
+
 jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: |
+          pip install uv
+      
+      - name: Install dependencies
+        run: |
+          cd release-server
+          uv sync --all-extras
+
+      - name: Run tests
+        run: |
+          cd release-server
+          uv run pytest
+
   publish:
     name: Build and Publish
+    needs: test
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -34,7 +68,6 @@ jobs:
           fetch-depth: 0
 
       - name: Get Next Version Info
-        if: github.event_name != 'pull_request'
         id: next_version
         run: |
           chmod +x .github/workflows/scripts/get-next-release-server-version.sh
@@ -43,28 +76,23 @@ jobs:
       - name: Determine Target Version
         id: version
         run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-             VERSION="0.0.0-pr"
+          MANUAL_VERSION="${{ github.event.inputs.version }}"
+          CALC_VERSION="${{ steps.next_version.outputs.new_version }}"
+           
+          if [ -n "$MANUAL_VERSION" ]; then
+            VERSION="$MANUAL_VERSION"
           else
-             MANUAL_VERSION="${{ github.event.inputs.version }}"
-             CALC_VERSION="${{ steps.next_version.outputs.new_version }}"
-             
-             if [ -n "$MANUAL_VERSION" ]; then
-                VERSION="$MANUAL_VERSION"
-             else
-                VERSION="$CALC_VERSION"
-             fi
+            VERSION="$CALC_VERSION"
+          fi
 
-             if [ "${{ github.event.inputs.is_test }}" == "true" ] || [ "${{ env.IS_TEST }}" == "true" ]; then
-                VERSION="${VERSION}-test"
-             fi
+          if [ "${{ github.event.inputs.is_test }}" == "true" ] || [ "${{ env.IS_TEST }}" == "true" ]; then
+            VERSION="${VERSION}-test"
           fi
           
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "Using version: $VERSION"
 
       - name: Check if release already exists
-        if: github.event_name != 'pull_request'
         id: check_release
         run: |
           chmod +x .github/workflows/scripts/check-release-exists.sh
@@ -80,33 +108,22 @@ jobs:
           .github/workflows/scripts/generate-release-server-notes.sh ${{ steps.version.outputs.VERSION }} ${{ steps.next_version.outputs.latest_tag }}
 
       - name: Set up Python
+        if: steps.check_release.outputs.exists == 'false'
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
       - name: Install uv
+        if: steps.check_release.outputs.exists == 'false'
         run: |
-          #
-          # Uncomment the following lines if you want to install via astral.sh
-          #
-          # curl -LsSf https://astral.sh/uv/install.sh | sh
-          # echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-          #
-          # For now, we install uv via pip
-          #
           pip install uv
 
+
       - name: Install dependencies
-        if: github.event_name == 'pull_request' || steps.check_release.outputs.exists == 'false'
+        if: steps.check_release.outputs.exists == 'false'
         run: |
           cd release-server
           uv sync --all-extras
-
-      - name: Run tests
-        if: github.event_name == 'pull_request' || steps.check_release.outputs.exists == 'false'
-        run: |
-          cd release-server
-          uv run pytest
 
       - name: Update version in pyproject.toml
         if: steps.check_release.outputs.exists == 'false'
@@ -123,12 +140,12 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Downcase repository owner
-        if: github.event_name == 'pull_request' || steps.check_release.outputs.exists == 'false'
+        if: steps.check_release.outputs.exists == 'false'
         id: owner
         run: echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
 
       - name: Extract metadata for Docker
-        if: github.event_name == 'pull_request' || steps.check_release.outputs.exists == 'false'
+        if: steps.check_release.outputs.exists == 'false'
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -138,11 +155,11 @@ jobs:
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and push Docker image
-        if: github.event_name == 'pull_request' || steps.check_release.outputs.exists == 'false'
+        if: steps.check_release.outputs.exists == 'false'
         uses: docker/build-push-action@v5
         with:
           context: ./release-server
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
@@ -160,13 +177,13 @@ jobs:
           ./scripts/release.sh ${{ steps.version.outputs.VERSION }}
 
       - name: Publish Helm Chart
-        if: github.event_name != 'pull_request' && steps.check_release.outputs.exists == 'false'
+        if: steps.check_release.outputs.exists == 'false'
         run: |
           chmod +x .github/workflows/scripts/publish-release-server-chart-ghcr.sh
           .github/workflows/scripts/publish-release-server-chart-ghcr.sh ${{ steps.version.outputs.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_ACTOR: ${{ github.repository_owner }}
+          GITHUB_ACTOR: ${{ github.actor }}
 
       - name: Create Release
         if: steps.check_release.outputs.exists == 'false'
@@ -177,6 +194,8 @@ jobs:
           body_path: release_notes.md
           draft: false
           prerelease: false
+          # Monorepo component release: Do not mark as repo-wide "latest" (avoids timeout errors with non-standard prefixes)
+          make_latest: false
           files: |
             release-server/dist/*.whl
             release-server/dist/*.tar.gz
@@ -184,15 +203,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Commit and Push Version Bump
-        if: github.event_name == 'pull_request' && steps.check_release.outputs.exists == 'false'
+      - name: Commit version bump
+        if: steps.check_release.outputs.exists == 'false'
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add release-server/pyproject.toml
-          if ! git diff --staged --quiet; then
-            git commit -m "chore(release): bump release-server version to ${{ steps.version.outputs.VERSION }} [skip ci]"
-            git push
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # Only commit pyproject.toml, ignoring other potential staged changes
+          git commit -m "chore(release-server): bump version to ${{ steps.version.outputs.VERSION }} [skip ci]" release-server/pyproject.toml
+          
+          if [ "${ACT}" == "true" ]; then
+            echo "Running in act, skipping git push"
           else
-            echo "No changes to commit."
+            git push origin HEAD:${{ github.ref_name }}
           fi
+

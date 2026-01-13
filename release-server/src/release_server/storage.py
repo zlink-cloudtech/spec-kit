@@ -57,7 +57,7 @@ class StorageService:
         Raises FileNotFoundError if file does not exist.
         """
         file_path = self.root / filename
-        if not file_path.exists():
+        if not file_path.exists() or not file_path.is_file():
             raise FileNotFoundError(f"Package {filename} not found")
         
         # Async removal? os.remove is sync but fast. 
