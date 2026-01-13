@@ -215,6 +215,6 @@ jobs:
           if [ "${ACT}" == "true" ]; then
             echo "Running in act, skipping git push"
           else
-            git push origin main
+            git push origin HEAD:${{ github.ref_name }}
           fi
 
