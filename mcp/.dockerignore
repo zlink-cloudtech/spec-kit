@@ -1,0 +1,11 @@
+node_modules
+dist
+npm-debug.log
+.git
+.gitignore
+README.md
+README-CN.md
+evaluation.json
+docker-config.json
+scripts
+tests

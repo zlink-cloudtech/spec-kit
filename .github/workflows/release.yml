@@ -8,6 +8,7 @@ on:
       - 'scripts/**'
       - 'templates/**'
       - '.github/workflows/**'
+      - 'skills/**'
   workflow_dispatch:
 
 jobs:

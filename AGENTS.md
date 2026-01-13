@@ -217,21 +217,26 @@ Skills are specialized capabilities that provide AI agents with specific workflo
 
 ### Development Process
 
-1.  **Bootstrap with Skill Creator**
+1. **Bootstrap with Skill Creator**
+
     Use the `skill-creator` skill to generate the initial structure. This ensures consistency and adherence to best practices.
 
-2.  **Create Skill Directory**
+2. **Create Skill Directory**
+
     Create a new directory in the `skills/` folder.
-    *   **Naming Convention**: Use **kebab-case** (all lowercase, hyphen-separated).
-    *   Example: `skills/my-new-skill/`
 
-3.  **Implement Skill Logic**
+    - **Naming Convention**: Use **kebab-case** (all lowercase, hyphen-separated).
+    - Example: `skills/my-new-skill/`
+
+3. **Implement Skill Logic**
     Follow the specifications defined in the `skill-creator` skill. A standard skill typically includes:
-    *   `SKILL.md`: The core definition and instructions for the agent.
-    *   `scripts/`: Python or shell scripts that the agent can execute.
-    *   `reference/`: Contextual documentation.
 
-4.  **Configure Agent (if needed)**
+    - `SKILL.md`: The core definition and instructions for the agent.
+    - `scripts/`: Python or shell scripts that the agent can execute.
+    - `reference/`: Contextual documentation.
+
+4. **Configure Agent (if needed)**
+
     Ensure the target agent is configured to receive the skills instructions. In `src/specify_cli/__init__.py`, the agent's entry in `AGENT_CONFIG` must have a `skills` block:
 
     ```python
@@ -243,6 +248,7 @@ Skills are specialized capabilities that provide AI agents with specific workflo
         },
     }
     ```
+
     *Note: The `Skills` generator automatically discovers all valid skills in the `skills/` directory and adds them to the generated instruction file.*
 
 ## Important Design Decisions
