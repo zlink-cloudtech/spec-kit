@@ -24,7 +24,7 @@ fi
 # Lowercase the owner name for OCI registry compliance
 OWNER="${GITHUB_REPOSITORY_OWNER,,}"
 REGISTRY="oci://ghcr.io/${OWNER}/charts"
-CHART_PACKAGE="release-server-chart-${VERSION}.tgz"
+CHART_PACKAGE="speckit-rs-${VERSION}.tgz"
 CHART_PATH="${DIST_DIR}/${CHART_PACKAGE}"
 
 # if no GITHUB_ACTOR is set, default to OWNER

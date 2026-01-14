@@ -37,7 +37,19 @@ docker run -p 8000:8000 \
   -e AUTH_TOKEN=my-secret-token \
   -e MAX_PACKAGES=20 \
   -v $(pwd)/data:/data \
-  ghcr.io/spec-kit/release-server:latest
+  ghcr.io/zlink-cloudtech/speckit-rs:latest
+```
+
+### Helm Deployment
+
+Install directly from the OCI registry:
+
+```bash
+# Install the latest version
+helm install release-server oci://ghcr.io/zlink-cloudtech/charts/speckit-rs --version 0.1.0
+
+# Or install from specific version
+helm install release-server oci://ghcr.io/zlink-cloudtech/charts/speckit-rs --version <VERSION>
 ```
 
 ## Configuration

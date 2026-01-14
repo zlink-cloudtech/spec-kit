@@ -138,7 +138,8 @@ As a release engineer, I want to delete a specific package using an API endpoint
   - **Logging**: Application must output structured JSON logs to stdout for container observability.
     - **Schema**: Must include `level` (INFO, ERROR, etc.), `message`, `timestamp` (ISO 8601), and `module` (logger name).
 - **Helm**:
-  - Helm chart provided in `release-server/chart` (or similar).
+  - Helm chart provided in `release-server/chart` (Chart name: `speckit-rs`).
+  - Distribution via OCI Registry (e.g., `oci://ghcr.io/zlink-cloudtech/charts/speckit-rs`).
   - Configurable values for image, port, persistence, and resources.
   - Support for both standard `Ingress` and `HTTPRoute` (Gateway API).
   - Configurable liveness and readiness probes (period, threshold).

@@ -1,5 +1,5 @@
 apiVersion: v2
-name: release-server
+name: speckit-rs
 description: A simple release server for hosting spec-kit packages.
 type: application
 version: 0.1.0
