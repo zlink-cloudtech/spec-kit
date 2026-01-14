@@ -45,6 +45,7 @@ Production reality informs specification evolution. Metrics, incidents, and oper
 ## Development Workflow
 
 ### SDD Lifecycle
+
 1.  **Specify**: Transform vague ideas into structured Feature Specifications (`spec.md`) with user stories and acceptance criteria.
 2.  **Plan**: Generate comprehensive Implementation Plans (`plan.md`) that map requirements to technical architecture and decisions.
 3.  **Task**: Derive executable Task Lists (`tasks.md`) from the implementation plan and design documents.
