@@ -44,8 +44,8 @@ if command -v helm >/dev/null 2>&1; then
         --app-version "${VERSION}" \
         --destination "${DIST_DIR}"
     
-    # Rename to include -chart suffix for clarity
-    mv "${DIST_DIR}/release-server-${VERSION}.tgz" "${DIST_DIR}/release-server-chart-${VERSION}.tgz"
+    # Artifact will be named speckit-rs-${VERSION}.tgz 
+    # We leave it as is to follow standard Helm conventions
 else
     echo "❌ Helm not found! Skipping chart packaging."
     exit 1

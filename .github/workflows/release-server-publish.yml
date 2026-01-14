@@ -149,7 +149,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ steps.owner.outputs.owner }}/release-server
+          images: ghcr.io/${{ steps.owner.outputs.owner }}/speckit-rs
           tags: |
             type=semver,pattern={{version}},value=${{ steps.version.outputs.VERSION }}
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}

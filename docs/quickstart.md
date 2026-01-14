@@ -149,6 +149,21 @@ Finally, implement the solution:
 /speckit.implement
 ```
 
+## Deploying Release Server (Optional)
+
+If you need to host your own `spec-kit` templates, you can deploy the Release Server to your Kubernetes cluster.
+
+### Install via Helm OCI
+
+The Release Server is distributed as an OCI artifact on GitHub Container Registry (GHCR). You do not need to use `helm repo add`.
+
+```bash
+# Install the latest version
+helm install my-release-server oci://ghcr.io/zlink-cloudtech/charts/speckit-rs --version 0.1.0
+```
+
+For detailed instructions, see the [Release Server documentation](../release-server/README.md).
+
 ## Key Principles
 
 - **Be explicit** about what you're building and why

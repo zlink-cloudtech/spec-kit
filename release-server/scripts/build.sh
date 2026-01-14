@@ -4,8 +4,8 @@ set -e
 # Default values matches the spec
 # Image name format: {REGISTRY}/{AUTHOR}/{IMAGE_NAME}:{TAG}
 REGISTRY="${REGISTRY:-ghcr.io}"
-AUTHOR="${AUTHOR:-spec-kit}" # Maps to namespace
-IMAGE_NAME="${IMAGE_NAME:-release-server}"
+AUTHOR="${AUTHOR:-zlink-cloudtech}" # Maps to namespace
+IMAGE_NAME="${IMAGE_NAME:-speckit-rs}"
 TAG="${TAG:-latest}"
 
 IMAGE_URI="${REGISTRY}/${AUTHOR}/${IMAGE_NAME}:${TAG}"

@@ -14,10 +14,20 @@ This chart bootstraps a [Release Server](https://github.com/github/spec-kit/tree
 
 ## Installation
 
-To install the chart with the release name `my-release`:
+### Method 1: Directly from OCI Registry (Recommended)
+
+You can install the chart directly from GitHub Container Registry (GHCR):
 
 ```bash
-helm install my-release ./chart
+helm install speckit-rs oci://ghcr.io/zlink-cloudtech/charts/speckit-rs --version 0.1.0
+```
+
+### Method 2: From Source (Local)
+
+To install the chart from the local directory with the release name `speckit-rs`:
+
+```bash
+helm install speckit-rs ./chart
 ```
 
 The command deploys the Release Server on the Kubernetes cluster in the default configuration. The [Parameters](#parameters) section lists the parameters that can be configured during installation.
@@ -38,7 +48,7 @@ The following table lists the configurable parameters of the Release Server char
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `image.repository` | Image repository | `ghcr.io/github/spec-kit/release-server` |
+| `image.repository` | Image repository | `ghcr.io/zlink-cloudtech/speckit-rs` |
 | `image.tag` | Image tag | `latest` |
 | `image.pullPolicy` | Image pull policy | `IfNotPresent` |
 | `imagePullSecrets` | Image pull secrets | `[]` |
