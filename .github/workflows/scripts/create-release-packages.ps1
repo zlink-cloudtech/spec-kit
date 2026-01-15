@@ -264,6 +264,23 @@ function Build-Variant {
         Write-Host "Copied templates -> .specify/templates"
     }
     
+    # Skills packaging based on agent type
+    if (Test-Path "skills") {
+        $skillsDest = $null
+        switch ($Agent) {
+            'copilot' { $skillsDest = Join-Path $baseDir ".github/skills" }
+            'claude'  { $skillsDest = Join-Path $baseDir ".claude/skills" }
+            'roo'     { $skillsDest = Join-Path $baseDir ".roo/skills" }
+            Default   { $skillsDest = Join-Path $baseDir ".specify/skills" }
+        }
+        
+        if ($skillsDest) {
+            New-Item -ItemType Directory -Path $skillsDest -Force | Out-Null
+            Copy-Item -Path "skills/*" -Destination $skillsDest -Recurse -Force
+            Write-Host "Copied skills -> $($skillsDest.Substring($baseDir.Length + 1))"
+        }
+    }
+    
     # Generate agent-specific command files
     switch ($Agent) {
         'claude' {

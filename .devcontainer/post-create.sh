@@ -93,13 +93,6 @@ echo -e "\n📚 Installing DocFx..."
 run_command "dotnet tool update -g docfx"
 echo "✅ Done"
 
-# Updating Skills Prompt
-echo -e "\n🧠 Updating Skills Prompt..."
-run_command "python3 src/specify_cli/skills.py" \
-    --path ".github/instructions/speckit-skills.instructions.md" \
-    --format "copilot-instructions"
-echo "✅ Done"
-
 echo -e "\n🧹 Cleaning cache..."
 run_command "sudo apt-get autoclean"
 run_command "sudo apt-get clean"

@@ -152,8 +152,27 @@ build_variant() {
   
   [[ -d templates ]] && { mkdir -p "$SPEC_DIR/templates"; find templates -type f -not -path "templates/commands/*" -not -name "vscode-settings.json" -exec cp --parents {} "$SPEC_DIR"/ \; ; echo "Copied templates -> .specify/templates"; }
   
-  [[ -d skills ]] && { cp -r skills "$base_dir/"; echo "Copied skills -> root"; }
-
+  # Skills packaging based on agent type
+  if [[ -d skills ]]; then
+    case $agent in
+      copilot)
+        mkdir -p "$base_dir/.github/skills"
+        cp -r skills/* "$base_dir/.github/skills/"
+        echo "Copied skills -> .github/skills" ;;
+      claude)
+        mkdir -p "$base_dir/.claude/skills"
+        cp -r skills/* "$base_dir/.claude/skills/"
+        echo "Copied skills -> .claude/skills" ;;
+      roo)
+        mkdir -p "$base_dir/.roo/skills"
+        cp -r skills/* "$base_dir/.roo/skills/"
+        echo "Copied skills -> .roo/skills" ;;
+      *)
+        mkdir -p "$base_dir/.specify/skills"
+        cp -r skills/* "$base_dir/.specify/skills/"
+        echo "Copied skills -> .specify/skills" ;;
+    esac
+  fi
 
   # NOTE: We substitute {ARGS} internally. Outward tokens differ intentionally:
   #   * Markdown/prompt (claude, copilot, cursor-agent, opencode): $ARGUMENTS
