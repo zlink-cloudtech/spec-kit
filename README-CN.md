@@ -9,9 +9,9 @@
 </p>
 
 <p align="center">
-    <a href="https://github.com/github/spec-kit/actions/workflows/release.yml"><img src="https://github.com/github/spec-kit/actions/workflows/release.yml/badge.svg" alt="Release"/></a>
-    <a href="https://github.com/github/spec-kit/stargazers"><img src="https://img.shields.io/github/stars/github/spec-kit?style=social" alt="GitHub stars"/></a>
-    <a href="https://github.com/github/spec-kit/blob/main/LICENSE"><img src="https://img.shields.io/github/license/github/spec-kit" alt="License"/></a>
+    <a href="https://github.com/zlink-cloudtech/spec-kit/actions/workflows/release.yml"><img src="https://github.com/zlink-cloudtech/spec-kit/actions/workflows/release.yml/badge.svg" alt="Release"/></a>
+    <a href="https://github.com/zlink-cloudtech/spec-kit/stargazers"><img src="https://img.shields.io/github/stars/zlink-cloudtech/spec-kit?style=social" alt="GitHub stars"/></a>
+    <a href="https://github.com/zlink-cloudtech/spec-kit/blob/main/LICENSE"><img src="https://img.shields.io/github/license/zlink-cloudtech/spec-kit" alt="License"/></a>
     <a href="https://github.github.io/spec-kit/"><img src="https://img.shields.io/badge/docs-GitHub_Pages-blue" alt="Documentation"/></a>
 </p>
 
@@ -51,7 +51,7 @@ Spec-Driven Development **颠覆了** 传统的软件开发方式。几十年来
 安装一次，随处使用：
 
 ```bash
-uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
+uv tool install specify-cli --from git+https://github.com/zlink-cloudtech/spec-kit.git
 ```
 
 然后直接使用工具：
@@ -72,7 +72,7 @@ specify check
 要升级 Specify，请参阅[升级指南](./docs/upgrade.md)以获取详细说明。快速升级：
 
 ```bash
-uv tool install specify-cli --force --from git+https://github.com/github/spec-kit.git
+uv tool install specify-cli --force --from git+https://github.com/zlink-cloudtech/spec-kit.git
 ```
 
 #### 选项 2：一次性使用
@@ -80,7 +80,7 @@ uv tool install specify-cli --force --from git+https://github.com/github/spec-ki
 无需安装即可直接运行：
 
 ```bash
-uvx --from git+https://github.com/github/spec-kit.git specify init <PROJECT_NAME>
+uvx --from git+https://github.com/zlink-cloudtech/spec-kit.git specify init <PROJECT_NAME>
 ```
 
 **持久安装的好处：**
@@ -649,7 +649,7 @@ rm gcm-linux_amd64.2.6.1.deb
 
 ## 💬 支持
 
-有关支持，请打开 [GitHub issue](https://github.com/github/spec-kit/issues/new)。我们欢迎错误报告、功能请求以及有关使用 Spec-Driven Development 的问题。
+有关支持，请打开 [GitHub issue](https://github.com/zlink-cloudtech/spec-kit/issues/new)。我们欢迎错误报告、功能请求以及有关使用 Spec-Driven Development 的问题。
 
 ## 🙏 致谢
 

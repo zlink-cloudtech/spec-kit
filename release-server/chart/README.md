@@ -4,7 +4,7 @@ A Helm chart for deploying the `spec-kit` Release Server, a simple service for h
 
 ## Introduction
 
-This chart bootstraps a [Release Server](https://github.com/github/spec-kit/tree/main/release-server) deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
+This chart bootstraps a [Release Server](https://github.com/zlink-cloudtech/spec-kit/tree/main/release-server) deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
 ## Prerequisites
 
