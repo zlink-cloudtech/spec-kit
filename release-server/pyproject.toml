@@ -1,6 +1,6 @@
 [project]
 name = "release-server"
-version = "0.1.0"
+version = "0.1.1"
 description = "Lightweight release server for Spec Kit templates"
 authors = [{name = "Spec Kit Team", email = "maintainers@spec-kit.org"}]
 readme = "README.md"
