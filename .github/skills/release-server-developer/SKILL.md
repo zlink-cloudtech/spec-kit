@@ -1,10 +1,6 @@
 ---
 name: release-server-developer
-description: |
-  Development, testing, and management toolkit for the Release Server component (in `release-server/` directory). Use this skill when need to 
-  (1) Develop, modify, or debug server code (routes, auth, config), 
-  (2) Build, run, or release the Release Server Docker image using provided scripts, 
-  (3) Perform operational tasks like uploading, listing, or deleting packages, or Run tests and verification pipelines for the Release Server.
+description: Development, testing, and management toolkit for the Release Server component (in `release-server/` directory). Use this skill when need to (1) Understand, research, or explore the Release Server architecture and implementation, (2) Develop, modify, or debug server code (routes, auth, config), (3) Build, run, or release the Release Server Docker image using provided scripts, (4) Perform operational tasks like uploading, listing, or deleting packages, or Run tests and verification pipelines for the Release Server.
 ---
 
 # Release Server Developer
