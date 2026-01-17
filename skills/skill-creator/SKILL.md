@@ -1,6 +1,6 @@
 ---
 name: skill-creator
-description: Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.
+description: Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Agents capabilities with specialized knowledge, workflows, or tool integrations.
 license: Complete terms in LICENSE.txt
 ---
 
@@ -10,9 +10,9 @@ This skill provides guidance for creating effective skills.
 
 ## About Skills
 
-Skills are modular, self-contained packages that extend Claude's capabilities by providing
+Skills are modular, self-contained packages that extend Agents capabilities by providing
 specialized knowledge, workflows, and tools. Think of them as "onboarding guides" for specific
-domains or tasks—they transform Claude from a general-purpose agent into a specialized agent
+domains or tasks—they transform Agents from a general-purpose agent into a specialized agent
 equipped with procedural knowledge that no model can fully possess.
 
 ### What Skills Provide
@@ -26,9 +26,9 @@ equipped with procedural knowledge that no model can fully possess.
 
 ### Concise is Key
 
-The context window is a public good. Skills share the context window with everything else Claude needs: system prompt, conversation history, other Skills' metadata, and the actual user request.
+The context window is a public good. Skills share the context window with everything else Agents needs: system prompt, conversation history, other Skills' metadata, and the actual user request.
 
-**Default assumption: Claude is already very smart.** Only add context Claude doesn't already have. Challenge each piece of information: "Does Claude really need this explanation?" and "Does this paragraph justify its token cost?"
+**Default assumption: Agents is already very smart.** Only add context Agents doesn't already have. Challenge each piece of information: "Does Agents really need this explanation?" and "Does this paragraph justify its token cost?"
 
 Prefer concise examples over verbose explanations.
 
@@ -42,7 +42,7 @@ Match the level of specificity to the task's fragility and variability:
 
 **Low freedom (specific scripts, few parameters)**: Use when operations are fragile and error-prone, consistency is critical, or a specific sequence must be followed.
 
-Think of Claude as exploring a path: a narrow bridge with cliffs needs specific guardrails (low freedom), while an open field allows many routes (high freedom).
+Think of Agents as exploring a path: a narrow bridge with cliffs needs specific guardrails (low freedom), while an open field allows many routes (high freedom).
 
 ### Anatomy of a Skill
 
