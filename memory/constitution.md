@@ -27,19 +27,22 @@ Follow-up TODOs:
 
 ## Core Principles
 
-### I. Specification-First
+### I. Skills-First
+Skills are the authoritative source of capability. Before creating custom implementations, available skills must be analyzed and utilized. If a skill exists for a task, it takes precedence over general knowledge or training data. Custom code is a fallback, not a default.
+
+### II. Specification-First
 The specification is the primary artifact and source of truth. Code is a derived expression of the specification. All development begins with defining intent in a comprehensive Project Requirements Document (PRD). Implementation details flow downstream from the specification. Maintaining software means evolving specifications, not just patching code.
 
-### II. Executable Specifications
+### III. Executable Specifications
 Specifications must be precise, complete, and unambiguous enough to generate working systems. They serve as the input for implementation planning and code generation. The gap between intent and implementation is minimized by treating specifications as executable directives rather than passive documentation.
 
-### III. Continuous Refinement
+### IV. Continuous Refinement
 Consistency and quality are validated continuously, not at a single gate. Automated analysis checks specifications for ambiguity, contradictions, and gaps throughout the lifecycle. Refinement is an ongoing process of aligning the specification with evolving requirements and insights.
 
-### IV. Research-Driven Context
+### V. Research-Driven Context
 Technical decisions are informed by active research. Before implementation planning, critical context—library compatibility, organizational constraints, performance benchmarks—is gathered and applied. This ensures specifications are grounded in technical reality.
 
-### V. Bidirectional Feedback
+### VI. Bidirectional Feedback
 Production reality informs specification evolution. Metrics, incidents, and operational learnings are not just fixes but inputs for refining the foundational specifications. The development loop is circular: Specification → Implementation → Operation → Specification.
 
 ## Development Workflow

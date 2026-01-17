@@ -5,6 +5,20 @@
 
 **Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/commands/plan.md` for the execution workflow.
 
+## Skill Alignment Strategy
+
+<!--
+  ACTION REQUIRED: Map spec requirements to available skills.
+  
+  RULE: "Skills have highest priority and authority."
+  If a skill aligns with a requirement, the plan MUST rely on that skill.
+-->
+
+| Requirement (User Story/Tech) | Matched Skill | Usage Strategy |
+|-------------------------------|---------------|----------------|
+| [e.g., Deploy to Production]  | [e.g. release-server-developer] | [e.g., Use skill execution to handle deployment logic] |
+| [e.g., Data Migration]        | [None]        | Custom implementation required |
+
 ## Summary
 
 [Extract from feature spec: primary requirement + technical approach from research]

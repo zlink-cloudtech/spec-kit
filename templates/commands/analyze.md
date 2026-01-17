@@ -15,13 +15,13 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Goal
 
-Identify inconsistencies, duplications, ambiguities, and underspecified items across the three core artifacts (`spec.md`, `plan.md`, `tasks.md`) before implementation. This command MUST run only after `/speckit.tasks` has successfully produced a complete `tasks.md`.
+Identify inconsistencies, duplications, ambiguities, and underspecified items across the three core artifacts (`spec.md`, `plan.md`, `tasks.md`) before implementation. **Verify that the project strictly adheres to the workflows and mandates defined in relevant Skills.** This command MUST run only after `/speckit.tasks` has successfully produced a complete `tasks.md`.
 
 ## Operating Constraints
 
 **STRICTLY READ-ONLY**: Do **not** modify any files. Output a structured analysis report. Offer an optional remediation plan (user must explicitly approve before any follow-up editing commands would be invoked manually).
 
-**Constitution Authority**: The project constitution (`/memory/constitution.md`) is **non-negotiable** within this analysis scope. Constitution conflicts are automatically CRITICAL and require adjustment of the spec, plan, or tasks—not dilution, reinterpretation, or silent ignoring of the principle. If a principle itself needs to change, that must occur in a separate, explicit constitution update outside `/speckit.analyze`.
+**Constitution & Skill Authority**: The project constitution (`/memory/constitution.md`) and **active Skills** are **non-negotiable** within this analysis scope. Conflicts with Constitution or Skills are automatically CRITICAL.
 
 ## Execution Steps
 
@@ -67,14 +67,25 @@ Load only the minimal necessary context from each artifact:
 
 - Load `/memory/constitution.md` for principle validation
 
+**From active skills:**
+
+- Identify used skills from `spec.md` ("Linked Skills") or `plan.md` ("Skill Alignment Strategy")
+- Load `SKILL.md` content for each identified skill
+- **Context Extraction Strategy**: Instead of relying on specific section headers, analyze the content to identify:
+  - Procedural workflows (ordered steps)
+  - Mandatory requirements (MUST/REQUIRED)
+  - Technical constraints and prohibited patterns
+  - Verification steps and criteria
+
 ### 3. Build Semantic Models
 
 Create internal representations (do not include raw artifacts in output):
 
-- **Requirements inventory**: Each functional + non-functional requirement with a stable key (derive slug based on imperative phrase; e.g., "User can upload file" → `user-can-upload-file`)
+- **Requirements inventory**: Each functional + non-functional requirement with a stable key
 - **User story/action inventory**: Discrete user actions with acceptance criteria
-- **Task coverage mapping**: Map each task to one or more requirements or stories (inference by keyword / explicit reference patterns like IDs or key phrases)
+- **Task coverage mapping**: Map each task to one or more requirements or stories
 - **Constitution rule set**: Extract principle names and MUST/SHOULD normative statements
+- **Skill Workflow Model**: Extract sequential steps and mandatory actions from Skills
 
 ### 4. Detection Passes (Token-Efficient Analysis)
 
@@ -96,10 +107,15 @@ Focus on high-signal findings. Limit to 50 findings total; aggregate remainder i
 - User stories missing acceptance criteria alignment
 - Tasks referencing files or components not defined in spec/plan
 
-#### D. Constitution Alignment
+#### D. Constitution & Skill Alignment
 
 - Any requirement or plan element conflicting with a MUST principle
 - Missing mandated sections or quality gates from constitution
+- **Skill Deviation**:
+  - `plan.md`: Phases do not match Skill's identified procedural workflows
+  - `tasks.md`: Tasks omit steps mandated by Skill (e.g., "Run Pipeline Simulation")
+  - `spec.md`: Requirements contradict Skill's constraints
+  - **Simplification Check**: Detect if tasks merge discrete Skill steps into single generic tasks (Forbidden)
 
 #### E. Coverage Gaps
 
@@ -118,7 +134,7 @@ Focus on high-signal findings. Limit to 50 findings total; aggregate remainder i
 
 Use this heuristic to prioritize findings:
 
-- **CRITICAL**: Violates constitution MUST, missing core spec artifact, or requirement with zero coverage that blocks baseline functionality
+- **CRITICAL**: Violates constitution MUST or **Skill Mandate**, missing core spec artifact, or requirement with zero coverage
 - **HIGH**: Duplicate or conflicting requirement, ambiguous security/performance attribute, untestable acceptance criterion
 - **MEDIUM**: Terminology drift, missing non-functional task coverage, underspecified edge case
 - **LOW**: Style/wording improvements, minor redundancy not affecting execution order

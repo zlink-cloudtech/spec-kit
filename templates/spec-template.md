@@ -5,6 +5,19 @@
 **Status**: Draft  
 **Input**: User description: "$ARGUMENTS"
 
+## Available Skills Analysis
+
+<!--
+  ACTION REQUIRED: Review available skills (check the skills directory for your active agent, e.g., .specify/skills, .github/skills, etc.).
+  
+  RULE: Skills have highest priority and authority.
+  1. LIST any skills relevant to this request.
+  2. If a skill provides a capability, you MUST plan to use it instead of custom implementation.
+  3. Knowledge from skills generally overrides external knowledge.
+-->
+
+- **[Skill Name]**: [How it relates to the requirement]
+
 ## User Scenarios & Testing *(mandatory)*
 
 <!--
@@ -24,6 +37,8 @@
 
 [Describe this user journey in plain language]
 
+**Linked Skills**: [List specific skills relevant to this story, e.g., "release-server-developer", or "None"]
+
 **Why this priority**: [Explain the value and why it has this priority level]
 
 **Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by [specific action] and delivers [specific value]"]
@@ -39,6 +54,8 @@
 
 [Describe this user journey in plain language]
 
+**Linked Skills**: [List specific skills relevant to this story, e.g., "release-server-developer", or "None"]
+
 **Why this priority**: [Explain the value and why it has this priority level]
 
 **Independent Test**: [Describe how this can be tested independently]
@@ -52,6 +69,8 @@
 ### User Story 3 - [Brief Title] (Priority: P3)
 
 [Describe this user journey in plain language]
+
+**Linked Skills**: [List specific skills relevant to this story, e.g., "release-server-developer", or "None"]
 
 **Why this priority**: [Explain the value and why it has this priority level]
 

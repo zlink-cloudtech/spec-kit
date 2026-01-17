@@ -73,7 +73,12 @@ Given that feature description, do this:
 
 3. Load `templates/spec-template.md` to understand required sections.
 
-4. Follow this execution flow:
+4. **Skill Analysis (CRITICAL)**:
+   - READ the `SKILL.md` file for any relevant skill in its entirety. You cannot pick and choose sections; you must understand the full context.
+   - If a requirement falls under a skill's domain, you MUST plan to use that skill.
+   - Skill workflows are AUTHORITATIVE. You cannot simplify them.
+
+5. Follow this execution flow:
 
     1. Parse user description from Input
        If empty: ERROR "No feature description provided"
@@ -89,6 +94,7 @@ Given that feature description, do this:
        - Prioritize clarifications by impact: scope > security/privacy > user experience > technical details
     4. Fill User Scenarios & Testing section
        If no clear user flow: ERROR "Cannot determine user scenarios"
+       **Map each user story to relevant skills (0-N).**
     5. Generate Functional Requirements
        Each requirement must be testable
        Use reasonable defaults for unspecified details (document assumptions in Assumptions section)
@@ -99,9 +105,21 @@ Given that feature description, do this:
     7. Identify Key Entities (if data involved)
     8. Return: SUCCESS (spec ready for planning)
 
-5. Write the specification to SPEC_FILE using the template structure, replacing placeholders with concrete details derived from the feature description (arguments) while preserving section order and headings.
+5. **Analyze Available Skills**:
+   - Check the skills directory for your active agent (check the skills directory for your active agent, e.g., .specify/skills, .github/skills, etc.).
+   - Identify any skills that are relevant to the feature requirements.
+   - **RULE**: Skills have highest priority. If a skill exists, you MUST plan to use it.
+   - **Constraint Injection**:
+     - READ the skill full content of SKILL.md. Look for sections like "Constraints", "Requirements", "Workflow", "Standard" or "Testing & Verification".
+     - IF found, INJECT these requirements into the `spec.md` under `Requirements` or `Success Criteria`.
+     - Example: If skill says "Must run pipeline tests", add "SC-XXX: Passes `gh act` pipeline tests" to Spec.
 
-6. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
+6. Write the specification to SPEC_FILE using the template structure:
+   - Follow `templates/spec-template.md` perfectly.
+   - Populate `## Available Skills Analysis` with your findings.
+   - Replace placeholders with concrete details derived from the feature description.
+
+7. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
 
    a. **Create Spec Quality Checklist**: Generate a checklist file at `FEATURE_DIR/checklists/requirements.md` using the checklist template structure with these validation items:
 

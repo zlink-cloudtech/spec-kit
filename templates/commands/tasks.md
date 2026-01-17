@@ -37,6 +37,11 @@ You **MUST** consider the user input before proceeding (if not empty).
    - If data-model.md exists: Extract entities and map to user stories
    - If contracts/ exists: Map endpoints to user stories
    - If research.md exists: Extract decisions for setup tasks
+   - **Skill Integration**:
+     - specific Check `plan.md` for "Skill Alignment Strategy".
+     - For any requirement mapped to a skill, creating a task to *use/execute* that skill.
+     - **Strict Adherence**: Ensure tasks strictly reflect the workflow steps defined in the skill. Do not simplify or merge steps if the skill prescribes a specific sequence.
+     - Label such tasks with `[Skill: Name]`.
    - Generate tasks organized by user story (see Task Generation Rules below)
    - Generate dependency graph showing user story completion order
    - Create parallel execution examples per user story

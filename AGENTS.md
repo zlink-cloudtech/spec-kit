@@ -210,6 +210,14 @@ elif selected_ai == "windsurf":
 
 Skills are specialized capabilities that provide AI agents with specific workflows, instructions, and strategies for complex tasks.
 
+### Skill-First Development Policy
+
+In the Spec-Driven Development (SDD) workflow, skills are considered the authoritative source of knowledge and capability.
+
+1.  **Alignment**: During Specification and Planning, requirements must be mapped to available skills.
+2.  **Priority**: If a skill exists for a task, it must be used instead of ad-hoc implementation.
+3.  **Authority**: Skill instructions override general training data or external documentation.
+
 ### Development Process
 
 1. **Bootstrap with Skill Creator**

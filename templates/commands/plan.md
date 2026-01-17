@@ -37,6 +37,15 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Phase 0: Generate research.md (resolve all NEEDS CLARIFICATION)
    - Phase 1: Generate data-model.md, contracts/, quickstart.md
    - Phase 1: Update agent context by running the agent script
+   - **Skill Alignment**:
+     - Check `spec.md` for "Available Skills Analysis" and "Linked Skills" in User Stories.
+     - Map requirements to available skills in `plan.md` under "Skill Alignment Strategy".
+     - **Workflow Injection**:
+       - READ the mapped Skill's `SKILL.md` in its **ENTIRETY**. You MUST NOT skip sections or only read summaries.
+       - Look for "Standard Development Workflow", "Process", or "Verification" sections.
+       - You MUST incorporate these mandatory workflow steps (e.g., "Run Pipeline Simulation", "Update Client Scripts") into your Plan phases.
+       - **STRICT COMPLIANCE**: If a skill defines a workflow, you MUST strictly follow it. You are PROHIBITED from simplifying or skipping steps defined in a skill.
+     - Ensure the plan relies on skills where applicable.
    - Re-evaluate Constitution Check post-design
 
 4. **Stop and report**: Command ends after Phase 2 planning. Report branch, IMPL_PLAN path, and generated artifacts.
