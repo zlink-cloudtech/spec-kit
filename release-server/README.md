@@ -5,6 +5,7 @@ A lightweight HTTP server for hosting and distributing `spec-kit` templates.
 ## Features
 
 - **Package Hosting**: Upload and download release packages via HTTP.
+- **Checksum Verification**: Automatically calculates and stores SHA256 checksums for each package.
 - **GitHub Compatibility**: `/latest` endpoint mimics GitHub Release API for easy integration with `specify init`.
 - **Retention Policy**: Automatically cleans up old packages (configurable limit).
 - **Web Interface**: Simple HTML listing of available packages at `/packages`.
@@ -69,7 +70,7 @@ Configuration is handled via Environment Variables or a YAML config file.
 - `GET /latest`: Get metadata for the latest release (GitHub format).
 - `GET /packages`: List all packages (supports `Accept: text/html`).
 - `GET /assets/{filename}`: Download a specific package.
-- `POST /upload`: Upload a new package (Requires `Authorization: Bearer <token>`).
+- `POST /upload`: Upload a new package (Requires `Authorization: Bearer <token>`). Returns metadata including SHA256 checksum.
 
 ## Spec Kit Integration
 

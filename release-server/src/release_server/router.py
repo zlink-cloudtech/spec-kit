@@ -132,9 +132,11 @@ async def list_packages_negotiated(
                 <style>
                     body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
                     ul { list-style: none; padding: 0; }
-                    li { padding: 0.5rem; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+                    li { padding: 0.5rem; border-bottom: 1px solid #eee; display: flex; flex-direction: column; }
+                    .row { display: flex; justify-content: space-between; align-items: center; }
                     a { text-decoration: none; color: #0366d6; font-weight: bold; }
                     .meta { color: #666; font-size: 0.9em; }
+                    .sha { font-family: monospace; font-size: 0.8em; color: #888; background: #f6f8fa; padding: 2px 4px; border-radius: 3px; margin-top: 4px; word-break: break-all; }
                 </style>
             </head>
             <body>
@@ -150,10 +152,14 @@ async def list_packages_negotiated(
         for pkg in packages:
              download_url = f"{base_url}/assets/{pkg.name}"
              date_str = pkg.created_at.strftime("%Y-%m-%d %H:%M:%S")
+             sha_html = f'<div class="sha">SHA256: {pkg.sha256}</div>' if pkg.sha256 else ""
              html_content += f"""
                 <li>
-                    <a href="{download_url}">{pkg.name}</a> 
-                    <span class="meta">{pkg.size} bytes | {date_str}</span>
+                    <div class="row">
+                        <a href="{download_url}">{pkg.name}</a> 
+                        <span class="meta">{pkg.size} bytes | {date_str}</span>
+                    </div>
+                    {sha_html}
                 </li>
              """
              
