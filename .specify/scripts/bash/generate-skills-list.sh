@@ -48,9 +48,25 @@ if [[ ${#PATHS[@]} -eq 0 ]]; then
   exit 1
 fi
 
-if [[ -n "$OUTPUT_FILE" ]] && [[ -f "$OUTPUT_FILE" ]] && [[ "$FORCE" = false ]]; then
-  echo "Error: Output file '$OUTPUT_FILE' already exists. Use -f to overwrite." >&2
-  exit 1
+if [[ -n "$OUTPUT_FILE" ]]; then
+  OUT_DIR=$(dirname "$OUTPUT_FILE")
+  if [[ ! -d "$OUT_DIR" ]]; then
+    echo "Error: Output directory '$OUT_DIR' does not exist" >&2
+    exit 1
+  fi
+  if [[ ! -w "$OUT_DIR" ]]; then
+    echo "Error: Cannot write to output directory '$OUT_DIR'" >&2
+    exit 1
+  fi
+  if [[ -f "$OUTPUT_FILE" ]] && [[ ! -w "$OUTPUT_FILE" ]]; then
+    echo "Error: Cannot write to output file '$OUTPUT_FILE'" >&2
+    exit 1
+  fi
+  
+  if [[ -f "$OUTPUT_FILE" ]] && [[ "$FORCE" = false ]]; then
+    echo "Error: Output file '$OUTPUT_FILE' already exists. Use -f to overwrite." >&2
+    exit 1
+  fi
 fi
 
 generate_xml() {
@@ -59,6 +75,10 @@ generate_xml() {
     if [[ ! -d "$dir" ]]; then
       echo "Warning: Path '$dir' is not a directory. Skipping." >&2
       continue
+    fi
+    if [[ ! -r "$dir" ]]; then
+      echo "Error: Cannot read directory '$dir'" >&2
+      exit 1
     fi
 
     # Find all SKILL.md files recursively

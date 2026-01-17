@@ -35,6 +35,12 @@ description: "Task list template for feature implementation"
   - Entities from data-model.md
   - Endpoints from contracts/
   
+  **SKILL USAGE RULES**:
+  - Check "Skill Alignment Strategy" in plan.md.
+  - If a skill is identified, the task MUST be to use/execute that skill.
+  - Prefix skill-based tasks with optional label: `[Skill: <name>]`.
+  - Skills take precedence over manual implementation instructions.
+
   Tasks MUST be organized by user story so each story can be:
   - Implemented independently
   - Tested independently
