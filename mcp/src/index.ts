@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { SpeckitMcpServer } from "./server.js";
 
 async function main() {
