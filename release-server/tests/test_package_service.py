@@ -1,4 +1,5 @@
 import pytest
+import hashlib
 from unittest.mock import AsyncMock, MagicMock
 from fastapi import UploadFile, HTTPException
 from release_server.services.package_service import PackageService
@@ -87,18 +88,21 @@ async def test_list_packages(service, mock_storage):
 async def test_upload_package_success(service, mock_storage):
     file = MagicMock(spec=UploadFile)
     file.filename = "new.zip"
-    file.read = AsyncMock(return_value=b"content")
+    content = b"content"
+    file.read = AsyncMock(return_value=content)
+    expected_hash = hashlib.sha256(content).hexdigest()
     
     # Mock pre-existing files (none)
     mock_storage.list_packages.side_effect = [
         [], # First call (check exists)
-        [PackageMetadata(name="new.zip", path="/data/new.zip", size=7, created_at=datetime.now())] # Second call (return metadata)
+        [PackageMetadata(name="new.zip", path="/data/new.zip", size=7, created_at=datetime.now(), sha256=expected_hash)] # Second call (return metadata)
     ]
     
     result = await service.upload_package(file, overwrite=False)
     
     assert result.name == "new.zip"
-    mock_storage.save_package.assert_called_once_with("new.zip", b"content")
+    mock_storage.save_package.assert_called_once_with("new.zip", content)
+    mock_storage.save_checksum.assert_called_once_with("new.zip", expected_hash)
 
 @pytest.mark.asyncio
 async def test_upload_conflict(service, mock_storage):
@@ -120,15 +124,18 @@ async def test_upload_conflict(service, mock_storage):
 async def test_upload_overwrite(service, mock_storage):
     file = MagicMock(spec=UploadFile)
     file.filename = "existing.zip"
-    file.read = AsyncMock(return_value=b"new-content")
+    content = b"new-content"
+    file.read = AsyncMock(return_value=content)
+    expected_hash = hashlib.sha256(content).hexdigest()
     
     # Existing present
     mock_storage.list_packages.side_effect = [
         [PackageMetadata(name="existing.zip", path="/path", size=1, created_at=datetime.now())], # First call
-        [PackageMetadata(name="existing.zip", path="/path", size=11, created_at=datetime.now())] # Second call
+        [PackageMetadata(name="existing.zip", path="/path", size=len(content), created_at=datetime.now(), sha256=expected_hash)] # Second call
     ]
     
     result = await service.upload_package(file, overwrite=True)
     
     mock_storage.save_package.assert_called_once()
-    assert result.size == 11
+    mock_storage.save_checksum.assert_called_once_with("existing.zip", expected_hash)
+    assert result.size == len(content)

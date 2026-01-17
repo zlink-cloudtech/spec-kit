@@ -1,4 +1,5 @@
 from typing import List, Optional
+import hashlib
 from pathlib import Path
 from fastapi import UploadFile, HTTPException, status
 from release_server.storage import StorageService, PackageMetadata
@@ -69,7 +70,12 @@ class PackageService:
         content = await file.read()
         if len(content) == 0:
             raise HTTPException(status_code=400, detail="Empty file content")
+        
+        # Calculate checksum
+        sha256_hash = hashlib.sha256(content).hexdigest()
+
         await self.storage.save_package(file.filename, content)
+        await self.storage.save_checksum(file.filename, sha256_hash)
         
         # Return new metadata
         # We assume save is successful

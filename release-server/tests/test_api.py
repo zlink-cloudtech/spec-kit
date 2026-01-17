@@ -1,4 +1,5 @@
 from fastapi import status
+import hashlib
 
 def test_upload_package_success(client, test_settings):
     file_content = b"test content"
@@ -12,6 +13,7 @@ def test_upload_package_success(client, test_settings):
     data = response.json()
     assert data["name"] == filename
     assert data["size"] == len(file_content)
+    assert data["sha256"] == hashlib.sha256(file_content).hexdigest()
     
     # Verify storage
     saved_path = test_settings.storage_path / filename
@@ -70,6 +72,25 @@ def test_upload_package_overwrite(client, test_settings):
     
     # Verify overwritten content
     assert saved_path.read_bytes() == new_content
+
+def test_list_packages_json(client, test_settings):
+    # Setup
+    file_content = b"content"
+    filename = "pkg_list_test.zip"
+    client.post(
+        "/upload",
+        files={"file": (filename, file_content, "application/gzip")},
+        headers={"Authorization": "Bearer test-secret"}
+    )
+    
+    response = client.get("/packages?format=json")
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert len(data) >= 1
+    # Find our package
+    pkg = next((p for p in data if p["name"] == filename), None)
+    assert pkg is not None
+    assert pkg["sha256"] == hashlib.sha256(file_content).hexdigest()
 
 def test_get_latest_release(client, test_settings):
     # Setup: Create some dummy files directly in storage

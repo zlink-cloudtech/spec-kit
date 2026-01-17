@@ -10,6 +10,7 @@ class PackageMetadata(BaseModel):
     path: str
     size: int
     created_at: datetime
+    sha256: Optional[str] = Field(default=None, description="SHA256 checksum of the package content")
     # URL is dynamic, maybe handled by router, but storage just gives raw metadata
     
     @property
@@ -40,14 +41,16 @@ class StorageService:
             return []
             
         for entry in os.scandir(self.root):
-            if entry.is_file():
+            if entry.is_file() and not entry.name.endswith('.sha256'):
                 # Get stats
                 stat = entry.stat()
+                checksum = await self.load_checksum(entry.name)
                 packages.append(PackageMetadata(
                     name=entry.name,
                     path=entry.path,
                     size=stat.st_size,
-                    created_at=datetime.fromtimestamp(stat.st_mtime, timezone.utc)
+                    created_at=datetime.fromtimestamp(stat.st_mtime, timezone.utc),
+                    sha256=checksum
                 ))
         return packages
 
@@ -67,4 +70,27 @@ class StorageService:
         # Let's check imports.
         import aiofiles.os
         await aiofiles.os.remove(file_path)
+
+    async def save_checksum(self, filename: str, checksum: str) -> None:
+        """
+        Saves the checksum for a package in a sidecar file.
+        """
+        checksum_path = self.root / f"{filename}.sha256"
+        async with aiofiles.open(checksum_path, "w") as f:
+            await f.write(checksum)
+
+    async def load_checksum(self, filename: str) -> Optional[str]:
+        """
+        Loads the checksum from the sidecar file if it exists.
+        Returns None if no checksum file exists.
+        """
+        checksum_path = self.root / f"{filename}.sha256"
+        # Check existence using aiofiles.os.path.exists or just wrapping in try/except or sync check
+        # self.root / filename is a Path object, default sync .exists() is fine.
+        if not checksum_path.exists():
+            return None
+        
+        async with aiofiles.open(checksum_path, "r") as f:
+            content = await f.read()
+            return content.strip()
 

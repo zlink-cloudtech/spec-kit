@@ -64,3 +64,22 @@ async def test_delete_non_existent_package(storage_service):
     # Let's implementation raise FileNotFoundError so caller can decide (404).
     with pytest.raises(FileNotFoundError):
         await storage_service.delete_package("missing.zip")
+
+@pytest.mark.asyncio
+async def test_save_and_load_checksum(storage_service, storage_root):
+    filename = "pkg-with-hash.zip"
+    checksum = "a" * 64 # valid length hex string
+    
+    await storage_service.save_checksum(filename, checksum)
+    
+    expected_path = storage_root / f"{filename}.sha256"
+    assert expected_path.exists()
+    assert expected_path.read_text().strip() == checksum
+    
+    loaded = await storage_service.load_checksum(filename)
+    assert loaded == checksum
+
+@pytest.mark.asyncio
+async def test_load_missing_checksum(storage_service):
+    loaded = await storage_service.load_checksum("missing-hash.zip")
+    assert loaded is None
