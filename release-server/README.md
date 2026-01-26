@@ -38,26 +38,29 @@ Release Server is a production-ready FastAPI service that provides secure, scala
 ### Installation & Setup
 
 1. Install dependencies:
+
    ```bash
    cd release-server
    pip install -e .[dev]
    ```
-   
+
    Or using `uv`:
+
    ```bash
    uv sync --all-extras
    ```
 
 2. Start the development server:
+
    ```bash
    export AUTH_TOKEN=dev-secret-key
    uvicorn release_server.main:app --reload
    ```
 
 3. Verify the installation:
-   - API docs: http://localhost:8000/docs
-   - Package listing: http://localhost:8000/packages
-   - Health check: http://localhost:8000/health
+   - API docs: <http://localhost:8000/docs>
+   - Package listing: <http://localhost:8000/packages>
+   - Health check: <http://localhost:8000/health>
 
 </details>
 
@@ -170,17 +173,20 @@ Authorization: Bearer YOUR_AUTH_TOKEN
 ### Example Requests
 
 **List packages (JSON)**:
+
 ```bash
 curl http://localhost:8000/packages \
   -H "Accept: application/json"
 ```
 
 **Download package**:
+
 ```bash
 curl -O http://localhost:8000/assets/my-package.tar.gz
 ```
 
 **Upload package**:
+
 ```bash
 curl -X POST http://localhost:8000/upload \
   -H "Authorization: Bearer $AUTH_TOKEN" \
@@ -188,6 +194,7 @@ curl -X POST http://localhost:8000/upload \
 ```
 
 **Delete package**:
+
 ```bash
 curl -X DELETE http://localhost:8000/packages/my-package.tar.gz \
   -H "Authorization: Bearer $AUTH_TOKEN"
@@ -216,6 +223,7 @@ Use the provided upload helper script:
 ```
 
 **Options:**
+
 - `-u, --url <url>` — Server URL (default: `http://localhost:8000` or `$RELEASE_SERVER_URL`)
 - `-t, --token <token>` — Auth token (default: `$RELEASE_SERVER_TOKEN`)
 - `-f, --force` — Overwrite existing package
@@ -227,6 +235,7 @@ Use the provided upload helper script:
 ```
 
 **Options:**
+
 - `-u, --url <url>` — Server URL
 - `-t, --token <token>` — Auth token
 
@@ -249,11 +258,13 @@ Test GitHub Actions locally without creating commits:
 1. **Install [act](https://github.com/nektos/act)** following their documentation
 
 2. **Create `.secrets` file**:
-   ```
+
+   ```ini
    GITHUB_TOKEN=your_github_token
    ```
 
 3. **Run workflows locally**:
+
    ```bash
    # Test complete workflow (push event)
    ./.github/workflows/scripts/test-release-server.sh
@@ -275,21 +286,25 @@ pytest --cov=release_server
 
 > [!WARNING]
 > After testing with `act`, clean up test artifacts on GitHub by visiting **Releases** and **Packages** tabs.
+
 ## Troubleshooting
 
 ### Common Issues
 
 **Port already in use**:
+
 ```bash
 # Use a different port
 PORT=8001 uvicorn release_server.main:app
 ```
 
 **Authentication failures**:
+
 - Verify `AUTH_TOKEN` environment variable is set
 - Check Authorization header format: `Authorization: Bearer <token>`
 
 **Storage issues**:
+
 - Ensure `STORAGE_PATH` directory exists and is writable
 - Check available disk space (respects `MAX_PACKAGES` retention policy)
 
