@@ -1,154 +1,315 @@
-# Release Server
+<div align="center">
+  <h1>Release Server</h1>
+  <p>Lightweight HTTP server for hosting and distributing Spec Kit templates</p>
+  
+  [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+  [![FastAPI](https://img.shields.io/badge/fastapi-0.109+-green.svg)](https://fastapi.tiangolo.com/)
+  [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+  
+  [Features](#features) • [Quick Start](#quick-start) • [Configuration](#configuration) • [API](#api-endpoints)
+</div>
 
-A lightweight HTTP server for hosting and distributing `spec-kit` templates.
+---
+
+## Overview
+
+Release Server is a production-ready FastAPI service that provides secure, scalable hosting for Spec Kit release packages. It seamlessly integrates with the `specify init` workflow and supports containerized deployments via Docker and Kubernetes.
 
 ## Features
 
-- **Package Hosting**: Upload and download release packages via HTTP.
-- **Checksum Verification**: Automatically calculates and stores SHA256 checksums for each package.
-- **GitHub Compatibility**: `/latest` endpoint mimics GitHub Release API for easy integration with `specify init`.
-- **Retention Policy**: Automatically cleans up old packages (configurable limit).
-- **Web Interface**: Simple HTML listing of available packages at `/packages`.
-- **Dockerized**: Ready for container orchestration.
+- 📦 **Package Hosting** - Upload and download release packages via HTTP with automatic indexing
+- 🔐 **Token Authentication** - Secure uploads with Bearer token validation
+- 🔑 **Checksum Verification** - Automatic SHA256 calculation and validation for data integrity
+- 🔄 **GitHub Compatibility** - `/latest` endpoint mirrors GitHub Release API for drop-in integration
+- 🧹 **Auto Retention** - Configurable retention policy to manage package disk usage
+- 🌐 **Web Interface** - Browse available packages via simple HTML listing at `/packages`
+- 🐳 **Containerized** - Pre-built Docker images and Helm charts ready for deployment
 
-## Quickstart
+## Quick Start
 
-### Local Development
+<details open>
+<summary><h3>Local Development</h3></summary>
 
-1. **Install dependencies**:
+### Prerequisites
 
+- Python 3.12 or higher
+- `pip` or `uv` package manager
+
+### Installation & Setup
+
+1. Install dependencies:
    ```bash
+   cd release-server
    pip install -e .[dev]
    ```
-
-2. **Run server**:
-
+   
+   Or using `uv`:
    ```bash
-   export AUTH_TOKEN=secret
+   uv sync --all-extras
+   ```
+
+2. Start the development server:
+   ```bash
+   export AUTH_TOKEN=dev-secret-key
    uvicorn release_server.main:app --reload
    ```
 
-3. **Verify**:
-   Visit `http://localhost:8000/docs` for API documentation.
+3. Verify the installation:
+   - API docs: http://localhost:8000/docs
+   - Package listing: http://localhost:8000/packages
+   - Health check: http://localhost:8000/health
 
-### Docker Deployment
+</details>
+
+<details>
+<summary><h3>Docker Deployment</h3></summary>
+
+### Run with Docker
 
 ```bash
 docker run -p 8000:8000 \
-  -e AUTH_TOKEN=my-secret-token \
+  -e AUTH_TOKEN=your-secure-token \
   -e MAX_PACKAGES=20 \
-  -v $(pwd)/data:/data \
+  -v release-data:/data \
   ghcr.io/zlink-cloudtech/speckit-rs:latest
 ```
 
-### Helm Deployment
+### Using Docker Compose
 
-Install directly from the OCI registry:
+```yaml
+version: '3.8'
+services:
+  release-server:
+    image: ghcr.io/zlink-cloudtech/speckit-rs:latest
+    ports:
+      - "8000:8000"
+    environment:
+      AUTH_TOKEN: your-secure-token
+      MAX_PACKAGES: 20
+      STORAGE_PATH: /data
+    volumes:
+      - release-data:/data
+      
+volumes:
+  release-data:
+```
+
+</details>
+
+<details>
+<summary><h3>Kubernetes / Helm</h3></summary>
+
+### Install with Helm
 
 ```bash
-# Install the latest version
-helm install release-server oci://ghcr.io/zlink-cloudtech/charts/speckit-rs --version 0.1.0
-
-# Or install from specific version
-helm install release-server oci://ghcr.io/zlink-cloudtech/charts/speckit-rs --version <VERSION>
+helm install release-server oci://ghcr.io/zlink-cloudtech/charts/speckit-rs \
+  --version 0.1.0 \
+  --set authToken=your-secure-token
 ```
+
+### Upgrade Existing Installation
+
+```bash
+helm upgrade release-server oci://ghcr.io/zlink-cloudtech/charts/speckit-rs \
+  --version 0.1.0
+```
+
+For advanced Helm configuration, see [chart/README.md](chart/README.md).
+
+</details>
 
 ## Configuration
 
-Configuration is handled via Environment Variables or a YAML config file.
+Configuration can be set via **environment variables** or a **YAML configuration file**.
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `AUTH_TOKEN` | *Required* | Bearer token for upload operations. |
-| `MAX_PACKAGES` | `10` | Number of recent packages to keep. |
-| `STORAGE_PATH` | `/data` | Directory to store package files. |
-| `PORT` | `8000` | Listening port. |
-| `CONFIG_PATH` | `config.yaml` | Path to YAML config file (optional). |
+### Environment Variables
+
+| Variable | Default | Required | Description |
+|----------|---------|----------|-------------|
+| `AUTH_TOKEN` | — | Yes | Bearer token for upload authorization |
+| `MAX_PACKAGES` | `10` | No | Number of recent packages to retain |
+| `STORAGE_PATH` | `/data` | No | Directory for storing package files |
+| `PORT` | `8000` | No | Server listening port |
+| `CONFIG_PATH` | `config.yaml` | No | Path to optional YAML config file |
+
+### YAML Configuration File
+
+Example `config.yaml`:
+
+```yaml
+auth_token: your-secure-token
+max_packages: 20
+storage_path: /data
+port: 8000
+```
+
+> [!TIP]
+> Environment variables take precedence over YAML configuration.
 
 ## API Endpoints
 
-- `GET /latest`: Get metadata for the latest release (GitHub format).
-- `GET /packages`: List all packages (supports `Accept: text/html`).
-- `GET /assets/{filename}`: Download a specific package.
-- `POST /upload`: Upload a new package (Requires `Authorization: Bearer <token>`). Returns metadata including SHA256 checksum.
+### Core Operations
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| `GET` | `/health` | Health check endpoint | No |
+| `GET` | `/latest` | Latest release metadata (GitHub API format) | No |
+| `GET` | `/packages` | List all packages (HTML or JSON) | No |
+| `GET` | `/assets/{filename}` | Download specific package | No |
+| `POST` | `/upload` | Upload new package with metadata | Yes |
+| `DELETE` | `/packages/{filename}` | Delete specific package | Yes |
+
+### Authentication
+
+Upload and delete operations require the `Authorization` header:
+
+```bash
+Authorization: Bearer YOUR_AUTH_TOKEN
+```
+
+### Example Requests
+
+**List packages (JSON)**:
+```bash
+curl http://localhost:8000/packages \
+  -H "Accept: application/json"
+```
+
+**Download package**:
+```bash
+curl -O http://localhost:8000/assets/my-package.tar.gz
+```
+
+**Upload package**:
+```bash
+curl -X POST http://localhost:8000/upload \
+  -H "Authorization: Bearer $AUTH_TOKEN" \
+  -F "file=@dist/my-package.tar.gz"
+```
+
+**Delete package**:
+```bash
+curl -X DELETE http://localhost:8000/packages/my-package.tar.gz \
+  -H "Authorization: Bearer $AUTH_TOKEN"
+```
+
+For interactive API documentation, visit `/docs` when running the server.
 
 ## Spec Kit Integration
 
-To use with `specify` CLI:
+Use Release Server as a package source with the `specify` CLI:
 
 ```bash
 specify init --template-url http://your-release-server/latest
 ```
 
-## Management Scripts
+This seamlessly integrates Release Server into the Spec Kit initialization workflow.
 
-### Upload Script
+## Package Management
 
-A helper script is provided in [scripts/upload.sh](scripts/upload.sh) to simplify uploading packages to the server.
+### Upload Packages
 
-```bash
-# Usage: ./release-server/scripts/upload.sh [options] <file_path>
-
-./release-server/scripts/upload.sh -t "my-secret-token" dist/my-package.tar.gz
-```
-
-### Delete Script
-
-A helper script is provided in [scripts/delete.sh](scripts/delete.sh) to manually delete specific packages.
+Use the provided upload helper script:
 
 ```bash
-# Usage: ./release-server/scripts/delete.sh [options] <filename>
-
-./release-server/scripts/delete.sh -t "my-secret-token" my-package.tar.gz
+./scripts/upload.sh -t "your-auth-token" dist/my-package.tar.gz
 ```
 
-**Options for both scripts:**
+**Options:**
+- `-u, --url <url>` — Server URL (default: `http://localhost:8000` or `$RELEASE_SERVER_URL`)
+- `-t, --token <token>` — Auth token (default: `$RELEASE_SERVER_TOKEN`)
+- `-f, --force` — Overwrite existing package
 
-- `-u, --url <url>`: Server URL (default: `http://localhost:8000` or env `RELEASE_SERVER_URL`)
-- `-t, --token <token>`: Auth Token (default: env `RELEASE_SERVER_TOKEN`)
-- `-f, --force`: Overwrite existing file if it exists (Upload script only).
+### Delete Packages
 
-## Advanced: CI/CD & Local Workflow Testing
+```bash
+./scripts/delete.sh -t "your-auth-token" my-package.tar.gz
+```
 
-### GitHub Actions
+**Options:**
+- `-u, --url <url>` — Server URL
+- `-t, --token <token>` — Auth token
 
-The release server includes automated CI/CD workflows:
+> [!NOTE]
+> Both scripts support environment variables `RELEASE_SERVER_URL` and `RELEASE_SERVER_TOKEN` as defaults.
 
-- `.github/workflows/release-server-ci.yml`: Runs tests and linters on push/PR.
-- `.github/workflows/release-server-publish.yaml`: Builds and publishes Docker images/packages on tags.
+## CI/CD & Testing
 
-### Testing Workflows Locally
+### GitHub Actions Workflows
 
-To avoid "frequent commits" when debugging GitHub Actions, you can use **[act](https://github.com/nektos/act)**:
+Release Server includes automated CI/CD pipelines:
 
-1. **Install act**: Follow instructions on the [act repository](https://github.com/nektos/act).
+- **Test & Lint**: `.github/workflows/release-server-ci.yml` — Runs on every push and pull request
+- **Build & Publish**: `.github/workflows/release-server-publish.yaml` — Builds Docker images and publishes on version tags
 
-2. **Run Publish**:
+### Local Workflow Testing with Act
 
+Test GitHub Actions locally without creating commits:
+
+1. **Install [act](https://github.com/nektos/act)** following their documentation
+
+2. **Create `.secrets` file**:
+   ```
+   GITHUB_TOKEN=your_github_token
+   ```
+
+3. **Run workflows locally**:
    ```bash
-   # Run from project root
-   # Usage: ./.github/workflows/scripts/test-release-server.sh [options] [version]
-
-   # Test complete workflow (Push event) - Default
+   # Test complete workflow (push event)
    ./.github/workflows/scripts/test-release-server.sh
 
-   # Test validation only (Pull Request event)
+   # Test validation only (pull request event)
    ./.github/workflows/scripts/test-release-server.sh -e pull_request
    ```
 
-   > **.secrets file content** (Required):
-   >
-   > - GITHUB_TOKEN=your_github_token_here
+### Running Tests
 
-3. **Delete Artifacts**:
+```bash
+# Run test suite
+cd release-server
+pytest
 
-   After testing, you may want to clean up the created release artifacts on GitHub:
+# With coverage report
+pytest --cov=release_server
+```
 
-   1. Go to your repository's **Releases** page.
-   2. Find the release named `v0.0.90-test` (or the version you used).
-   3. Click on the release and then click **Delete** to remove it.
-   4. Go to Packages tab, find the package named `release-server`, and delete the version you created.
+> [!WARNING]
+> After testing with `act`, clean up test artifacts on GitHub by visiting **Releases** and **Packages** tabs.
+## Troubleshooting
 
-### Manual Trigger
+### Common Issues
 
-You can also test the publish workflow on GitHub without creating a tag by using the **Actions tab** and selecting **"Run workflow"** for the "Release Server Publish" action (uses `workflow_dispatch`).
+**Port already in use**:
+```bash
+# Use a different port
+PORT=8001 uvicorn release_server.main:app
+```
+
+**Authentication failures**:
+- Verify `AUTH_TOKEN` environment variable is set
+- Check Authorization header format: `Authorization: Bearer <token>`
+
+**Storage issues**:
+- Ensure `STORAGE_PATH` directory exists and is writable
+- Check available disk space (respects `MAX_PACKAGES` retention policy)
+
+> [!TIP]
+> For more details, check the [openapi.yaml](openapi.yaml) specification or visit `/docs` endpoint.
+
+## Resources
+
+- 📖 [Spec Kit Documentation](../docs/README.md)
+- 🐋 [Docker Hub](https://ghcr.io/zlink-cloudtech/speckit-rs)
+- 📦 [Helm Charts](chart/README.md)
+- 🛠️ [Spec Kit Repository](https://github.com/zlink-cloudtech/spec-kit)
+- 📝 [OpenAPI Specification](openapi.yaml)
+
+## License
+
+This project is licensed under the MIT License - see [LICENSE](../LICENSE) file for details.
+
+## Support
+
+- 🐛 [Report Issues](https://github.com/zlink-cloudtech/spec-kit/issues)
+- 💬 [Discussions](https://github.com/zlink-cloudtech/spec-kit/discussions)
+- 📧 Maintainers: <maintainers@zlinkcloudtech.com>
