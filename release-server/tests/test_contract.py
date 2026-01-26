@@ -10,13 +10,13 @@ from pydantic import SecretStr
 
 # Spec path relative to repo root
 # We attempt to find the spec file. 
-# If running from repo root, it is specs/003-release-server/contracts/openapi.yaml
-# If running from release-server/, it is ../specs/003-release-server/contracts/openapi.yaml
+# If running from repo root, it is release-server/openapi.yaml
+# If running from release-server/, it is ../release-server/openapi.yaml
 
 def get_spec_path():
     # Try finding relative to this file
     base_path = Path(__file__).parent.parent.parent
-    path = base_path / "specs/003-release-server/contracts/openapi.yaml"
+    path = base_path / "release-server/openapi.yaml"
     if path.exists():
         return str(path)
     
