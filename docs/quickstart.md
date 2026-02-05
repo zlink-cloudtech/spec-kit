@@ -45,6 +45,9 @@ uvx --from git+https://github.com/zlink-cloudtech/spec-kit.git specify init <PRO
 /speckit.specify Build an application that can help me organize my photos in separate photo albums. Albums are grouped by date and can be re-organized by dragging and dropping on the main page. Albums are never in other nested albums. Within each album, photos are previewed in a tile-like interface.
 ```
 
+> [!TIP]
+> **Workflow Orchestration**: You can use an existing directory for your feature using the `--spec-dir` parameter: `/speckit.specify --spec-dir specs/001-my-feature "Feature description"`. This allows parent workflows (like `speckit-vibe`) to coordinate directory isolation.
+
 ### Step 4: Refine the Spec
 
 **In the chat**, use the `/speckit.clarify` slash command to identify and resolve ambiguities in your specification. You can provide specific focus areas as arguments.

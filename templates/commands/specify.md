@@ -27,58 +27,90 @@ The text the user typed after `/speckit.specify` in the triggering message **is*
 
 Given that feature description, do this:
 
-1. **Generate a concise short name** (2-4 words) for the branch:
-   - Analyze the feature description and extract the most meaningful keywords
-   - Create a 2-4 word short name that captures the essence of the feature
-   - Use action-noun format when possible (e.g., "add-user-auth", "fix-payment-bug")
-   - Preserve technical terms and acronyms (OAuth2, API, JWT, etc.)
-   - Keep it concise but descriptive enough to understand the feature at a glance
-   - Examples:
-     - "I want to add user authentication" → "user-auth"
-     - "Implement OAuth2 integration for the API" → "oauth2-api-integration"
-     - "Create a dashboard for analytics" → "analytics-dashboard"
-     - "Fix payment processing timeout bug" → "fix-payment-timeout"
+1. **Detect workflow mode**:
+   
+   Check if the user provided a `--spec-dir` parameter in their input:
+   - If `--spec-dir <path>` is present: Use **Mode A** (existing directory workflow)
+   - Otherwise: Use **Mode B** (auto-create directory workflow - original behavior)
 
-2. **Check for existing branches before creating new one**:
-
-   a. First, fetch all remote branches to ensure we have the latest information:
-
+2. **Mode A: Existing Directory Workflow** (when `--spec-dir` provided):
+   
+   a. Extract the directory path from user input after `--spec-dir`
+   
+   b. Run the script with the spec-dir parameter:
       ```bash
-      git fetch --all --prune
+      .specify/scripts/bash/create-new-feature.sh --json --spec-dir "specs/001-feature-name/" "$ARGUMENTS"
       ```
+   
+   c. The script will:
+      - Validate the directory exists and is writable
+      - Extract branch name from directory path (e.g., `specs/001-oauth-integration/` → branch `001-oauth-integration`)
+      - Create or checkout the branch matching the directory name
+      - Initialize spec.md in the existing directory
+   
+   d. Skip to step 3 (Load template)
+   
+   **Example usage**:
+   ```bash
+   /speckit.specify --spec-dir specs/001-oauth-integration/ "Add OAuth2 authentication"
+   ```
 
-   b. Find the highest feature number across all sources for the short-name:
-      - Remote branches: `git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-<short-name>$'`
-      - Local branches: `git branch | grep -E '^[* ]*[0-9]+-<short-name>$'`
-      - Specs directories: Check for directories matching `specs/[0-9]+-<short-name>`
+3. **Mode B: Auto-Create Directory Workflow** (when `--spec-dir` NOT provided - original behavior):
 
-   c. Determine the next available number:
-      - Extract all numbers from all three sources
-      - Find the highest number N
-      - Use N+1 for the new branch number
+   a. **Generate a concise short name** (2-4 words) for the branch:
+      - Analyze the feature description and extract the most meaningful keywords
+      - Create a 2-4 word short name that captures the essence of the feature
+      - Use action-noun format when possible (e.g., "add-user-auth", "fix-payment-bug")
+      - Preserve technical terms and acronyms (OAuth2, API, JWT, etc.)
+      - Keep it concise but descriptive enough to understand the feature at a glance
+      - Examples:
+        - "I want to add user authentication" → "user-auth"
+        - "Implement OAuth2 integration for the API" → "oauth2-api-integration"
+        - "Create a dashboard for analytics" → "analytics-dashboard"
+        - "Fix payment processing timeout bug" → "fix-payment-timeout"
 
-   d. Run the script `{SCRIPT}` with the calculated number and short-name:
-      - Pass `--number N+1` and `--short-name "your-short-name"` along with the feature description
-      - Bash example: `{SCRIPT} --json --number 5 --short-name "user-auth" "Add user authentication"`
-      - PowerShell example: `{SCRIPT} -Json -Number 5 -ShortName "user-auth" "Add user authentication"`
+   b. **Check for existing branches before creating new one**:
 
-   **IMPORTANT**:
-   - Check all three sources (remote branches, local branches, specs directories) to find the highest number
-   - Only match branches/directories with the exact short-name pattern
-   - If no existing branches/directories found with this short-name, start with number 1
-   - You must only ever run this script once per feature
-   - The JSON is provided in the terminal as output - always refer to it to get the actual content you're looking for
-   - The JSON output will contain BRANCH_NAME and SPEC_FILE paths
-   - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot")
+      i. First, fetch all remote branches to ensure we have the latest information:
 
-3. Load `templates/spec-template.md` to understand required sections.
+         ```bash
+         git fetch --all --prune
+         ```
 
-4. **Skill Analysis (CRITICAL)**:
+      ii. Find the highest feature number across all sources for the short-name:
+         - Remote branches: `git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-<short-name>$'`
+         - Local branches: `git branch | grep -E '^[* ]*[0-9]+-<short-name>$'`
+         - Specs directories: Check for directories matching `specs/[0-9]+-<short-name>`
+
+      iii. Determine the next available number:
+         - Extract all numbers from all three sources
+         - Find the highest number N
+         - Use N+1 for the new branch number
+
+      iv. Run the script `{SCRIPT}` with the calculated number and short-name:
+         - Pass `--number N+1` and `--short-name "your-short-name"` along with the feature description
+         - Bash example: `{SCRIPT} --json --number 5 --short-name "user-auth" "Add user authentication"`
+         - PowerShell example: `{SCRIPT} -Json -Number 5 -ShortName "user-auth" "Add user authentication"`
+
+      **IMPORTANT**:
+      - Check all three sources (remote branches, local branches, specs directories) to find the highest number
+      - Only match branches/directories with the exact short-name pattern
+      - If no existing branches/directories found with this short-name, start with number 1
+      - You must only ever run this script once per feature
+      - The JSON is provided in the terminal as output - always refer to it to get the actual content you're looking for
+      - The JSON output will contain BRANCH_NAME and SPEC_FILE paths
+      - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot")
+
+4. **Load template and continue**: After either Mode A or B completes, continue with the rest of the workflow (load template, skill analysis, etc.)
+
+5. Load `templates/spec-template.md` to understand required sections.
+
+6. **Skill Analysis (CRITICAL)**:
    - READ the `SKILL.md` file for any relevant skill in its entirety. You cannot pick and choose sections; you must understand the full context.
    - If a requirement falls under a skill's domain, you MUST plan to use that skill.
    - Skill workflows are AUTHORITATIVE. You cannot simplify them.
 
-5. Follow this execution flow:
+7. Follow this execution flow:
 
     1. Parse user description from Input
        If empty: ERROR "No feature description provided"

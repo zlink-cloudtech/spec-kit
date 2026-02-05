@@ -8,6 +8,7 @@ All notable changes to this project from commit 9111699cd27879e3e6301651a03e502e
 
 ## Changes since 9111699cd27879e3e6301651a03e502ecb6dd65d
 
+- feat: add --spec-dir parameter to speckit.specify for directory isolation and workflow orchestration
 - 7257b6c fix: update release workflow to include version bump in pyproject.toml and handle git push conditionally
 - b29322d chore(release-server): bump version to 0.0.6 [skip ci]
 - 13ba0f7 fix: update method for retrieving latest release-server tag to ensure correct versioning
