@@ -57,6 +57,7 @@ eval $(get_feature_paths)
 
 NEW_PLAN="$IMPL_PLAN"  # Alias for compatibility with existing code
 AGENT_TYPE="${1:-}"
+PHASE="${2:-}"
 
 # Agent-specific file paths  
 CLAUDE_FILE="$REPO_ROOT/CLAUDE.md"
@@ -125,7 +126,7 @@ validate_environment() {
     if [[ -z "$CURRENT_BRANCH" ]]; then
         log_error "Unable to determine current feature"
         if [[ "$HAS_GIT" == "true" ]]; then
-            log_info "Make sure you're on a feature branch"
+            log_info "Make sure you're on a feature branch (e.g., feat/001-feature-name)"
         else
             log_info "Set SPECIFY_FEATURE environment variable or create a feature first"
         fi
@@ -137,7 +138,7 @@ validate_environment() {
         log_error "No plan.md found at $NEW_PLAN"
         log_info "Make sure you're working on a feature with a corresponding spec directory"
         if [[ "$HAS_GIT" != "true" ]]; then
-            log_info "Use: export SPECIFY_FEATURE=your-feature-name or create a new feature first"
+            log_info "Use: export SPECIFY_FEATURE=feat/your-feature-name or create a new feature first"
         fi
         exit 1
     fi
@@ -334,7 +335,7 @@ create_new_agent_file() {
         "s|\[DATE\]|$current_date|"
         "s|\[EXTRACTED FROM ALL PLAN.MD FILES\]|$tech_stack|"
         "s|\[ACTUAL STRUCTURE FROM PLANS\]|$project_structure|g"
-        "s|\[ONLY COMMANDS FOR ACTIVE TECHNOLOGIES\]|$commands|"
+        "s|\[ONLY COMMANDS FOR ACTIVE TECHNOLOGIES\]|$commands|g"
         "s|\[LANGUAGE-SPECIFIC, ONLY FOR LANGUAGES IN USE\]|$language_conventions|"
         "s|\[LAST 3 FEATURES AND WHAT THEY ADDED\]|$recent_change|"
     )
@@ -500,6 +501,45 @@ update_existing_agent_file() {
     
     return 0
 }
+update_skills_section() {
+    local target_file="$1"
+    local phase="$2"
+    local marker="<!-- SPECKIT_ACTIVE_SKILLS -->"
+    
+    log_info "Updating active skills for phase: $phase"
+    
+    # Create temp file
+    local temp_file
+    temp_file=$(mktemp) || {
+        log_error "Failed to create temporary file for skills update"
+        return 1
+    }
+    
+    # Copy content up to marker (or whole file if marker not found)
+    # We use awk to be safer than sed across platforms
+    awk -v marker="$marker" '
+    $0 ~ marker { exit } 
+    { print }
+    ' "$target_file" > "$temp_file"
+    
+    # Append marker and new skills
+    echo "" >> "$temp_file"
+    echo "$marker" >> "$temp_file"
+    
+    if ! python3 "$SCRIPT_DIR/../resolve-skills.py" "$phase" "$REPO_ROOT" >> "$temp_file"; then
+        log_warning "Failed to resolve skills for phase $phase"
+    fi
+    
+    # Replace file
+    if ! mv "$temp_file" "$target_file"; then
+        log_error "Failed to update skills in target file"
+        rm -f "$temp_file"
+        return 1
+    fi
+    
+    return 0
+}
+
 #==============================================================================
 # Main Agent File Update Function
 #==============================================================================
@@ -571,6 +611,15 @@ update_agent_file() {
         fi
     fi
     
+    # Inject Skills if Phase is present
+    if [[ -n "$PHASE" ]]; then
+        if update_skills_section "$target_file" "$PHASE"; then
+            log_success "Updated skills section for phase: $PHASE"
+        else
+            log_error "Failed to update skills section"
+        fi
+    fi
+
     return 0
 }
 

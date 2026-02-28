@@ -28,6 +28,7 @@
 - [🌟 Development Phases](#-development-phases)
 - [🎯 Experimental Goals](#-experimental-goals)
 - [🔧 Prerequisites](#-prerequisites)
+- [🖥️ MCP Server Deployment](#️-mcp-server-deployment)
 - [📖 Learn More](#-learn-more)
 - [📋 Detailed Process](#-detailed-process)
 - [🔍 Troubleshooting](#-troubleshooting)
@@ -278,7 +279,7 @@ Additional commands for enhanced quality and validation:
 
 | Variable          | Description                                                                                                                                                                                                                                                                                            |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `SPECIFY_FEATURE` | Override feature detection for non-Git repositories. Set to the feature directory name (e.g., `001-photo-albums`) to work on a specific feature when not using Git branches.<br/>\*\*Must be set in the context of the agent you're working with prior to using `/speckit.plan` or follow-up commands. |
+| `SPECIFY_FEATURE` | Override feature detection for non-Git repositories. Set to the full branch name including type prefix (e.g., `feat/001-photo-albums`) to work on a specific feature when not using Git branches.<br/>\*\*Must be set in the context of the agent you're working with prior to using `/speckit.plan` or follow-up commands. |
 
 ## 📚 Core Philosophy
 
@@ -332,6 +333,25 @@ Our research and experimentation focus on:
 - [Git](https://git-scm.com/downloads)
 
 If you encounter issues with an agent, please open an issue so we can refine the integration.
+
+## 🖥️ MCP Server Deployment
+
+Spec Kit includes an [MCP server](./mcp/README.md) that provides AI agents with technical document translation prompts. You can deploy it to Kubernetes using the included Helm chart:
+
+```bash
+# Install from GHCR (OCI registry)
+helm install my-mcp oci://ghcr.io/zlink-cloudtech/speckit-mcp-server --version <version>
+
+# Or install from local source
+helm install my-mcp ./mcp/chart
+```
+
+The chart supports two deployment modes:
+
+- **Image mode** (default) — deploy from a pre-built container image
+- **NPM mode** — install the NPM package at runtime via an init container
+
+See the [chart documentation](./mcp/chart/README.md) for full configuration options including Ingress, Gateway API HTTPRoute, resource limits, and private registry authentication.
 
 ## 📖 Learn More
 

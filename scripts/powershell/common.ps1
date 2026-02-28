@@ -79,17 +79,24 @@ function Test-FeatureBranch {
         return $true
     }
     
-    if ($Branch -notmatch '^[0-9]{3}-') {
+    if ($Branch -notmatch '^(feat|bug|hotfix|refactor|docs|chore)/[0-9]{3}-') {
         Write-Output "ERROR: Not on a feature branch. Current branch: $Branch"
-        Write-Output "Feature branches should be named like: 001-feature-name"
+        Write-Output "Feature branches should be named like: feat/001-feature-name"
         return $false
     }
     return $true
 }
 
+# Strip branch type prefix (e.g., feat/001-user-auth → 001-user-auth)
+function Get-BranchWithoutType {
+    param([string]$Branch)
+    return $Branch -replace '^(feat|bug|hotfix|refactor|docs|chore)/', ''
+}
+
 function Get-FeatureDir {
     param([string]$RepoRoot, [string]$Branch)
-    Join-Path $RepoRoot "specs/$Branch"
+    $specName = Get-BranchWithoutType -Branch $Branch
+    Join-Path $RepoRoot "specs/$specName"
 }
 
 function Get-FeaturePathsEnv {

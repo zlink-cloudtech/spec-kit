@@ -130,6 +130,15 @@ Focus on high-signal findings. Limit to 50 findings total; aggregate remainder i
 - Task ordering contradictions (e.g., integration tasks before foundational setup tasks without dependency note)
 - Conflicting requirements (e.g., one requires Next.js while other specifies Vue)
 
+#### G. Phase N Coverage Check
+
+- Verify plan.md "Documentation State Matrix" has ≥1 corresponding task in tasks.md Phase N (after `<!-- CONVERGENCE_BOUNDARY -->`)
+- Verify plan.md "Gap Analysis" has ≥1 bootstrapping task in tasks.md Phase N
+- Verify `<!-- CONVERGENCE_BOUNDARY -->` marker exists in tasks.md (if Phase N tasks are present)
+- Flag any Documentation State Matrix entry without a Phase N task as **CRITICAL**
+- Flag any Gap Analysis entry without a bootstrapping task as **HIGH**
+- Flag missing CONVERGENCE_BOUNDARY marker as **HIGH** (implement command cannot enforce boundary)
+
 ### 5. Severity Assignment
 
 Use this heuristic to prioritize findings:

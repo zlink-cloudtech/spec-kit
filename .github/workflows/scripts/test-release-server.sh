@@ -11,18 +11,24 @@ usage() {
     echo "                     If not provided, the workflow will calculate it automatically."
     echo ""
     echo "Options:"
-    echo "  -e, --event EVENT  The event to trigger (push, pull_request). Default: push."
+    echo "  -e, --event EVENT  The event to trigger (push, workflow_dispatch). Default: workflow_dispatch."
+    echo "  -d, --dry-run      Enable dry-run mode (build & package only, skip push). Default: true."
     echo "  -h, --help         Show this help message and exit."
 }
 
-EVENT="push"
+EVENT="workflow_dispatch"
 VERSION=""
+DRY_RUN="true"
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
         -e|--event)
             EVENT="$2"
+            shift 2
+            ;;
+        -d|--dry-run)
+            DRY_RUN="$2"
             shift 2
             ;;
         -h|--help)
@@ -43,8 +49,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Validate event
-if [[ "$EVENT" != "push" && "$EVENT" != "pull_request" ]]; then
-    echo "Error: Event must be 'push' or 'pull_request'."
+if [[ "$EVENT" != "push" && "$EVENT" != "workflow_dispatch" ]]; then
+    echo "Error: Event must be 'push' or 'workflow_dispatch'."
     exit 1
 fi
 
@@ -61,6 +67,7 @@ if [ -n "$VERSION" ]; then
 else
   echo "Automatic version calculation"
 fi
+echo "Dry run: $DRY_RUN"
 echo "Note: Ensure you have run 'docker volume rm act-toolcache' if you encounter system-level cache issues."
 
 # Detect proxy settings
@@ -73,12 +80,19 @@ PROXY_ARGS=()
 # [[ -n "$no_proxy" ]] && PROXY_ARGS+=("--env" "no_proxy=$no_proxy") && echo "Detected no_proxy: $no_proxy"
 
 ACT_ARGS=(
-    "-W" ".github/workflows/release-server-publish.yml" 
-    "--secret-file" ".secrets" 
-    "--env" "IS_TEST=true")
+    "-W" ".github/workflows/release-server-publish.yml"
+    "--secret-file" ".secrets"
+)
 
-if [ -n "$VERSION" ]; then
-    ACT_ARGS+=("--input" "version=$VERSION")
+if [ "$EVENT" = "workflow_dispatch" ]; then
+    ACT_ARGS+=("--input" "dry_run=$DRY_RUN")
+    if [ -n "$VERSION" ]; then
+        ACT_ARGS+=("--input" "version=$VERSION")
+    fi
+else
+    if [ -n "$VERSION" ]; then
+        ACT_ARGS+=("--input" "version=$VERSION")
+    fi
 fi
 
 # Run gh act

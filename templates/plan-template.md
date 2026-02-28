@@ -116,3 +116,58 @@ directories captured above]
 |-----------|------------|-------------------------------------|
 | [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
 | [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+
+## Relevant System Context
+
+<!--
+  ACTION REQUIRED: Analyze memory/system-map.md and identify which existing 
+  components/documents are relevant to this feature.
+  
+  CONTEXT FUNNEL: This section filters the System Map to 3-5 key artifacts.
+-->
+
+| Component/Document | Location | Relevance |
+|--------------------|----------|-----------|
+| [e.g., User Authentication] | `docs/architecture/auth.md` | Feature modifies login flow |
+| [e.g., Database Schema] | `docs/db/schema.sql` | New table required |
+| [e.g., API Gateway] | `docs/api/gateway-config.yaml` | Adds new endpoint |
+
+**Gaps Detected**: [List any components that should have documentation but are marked "⚠️ Missing" in System Map]
+
+## Documentation State Matrix
+
+<!--
+  ACTION REQUIRED: Define how this feature affects system documentation.
+  
+  STRATEGY: Treat documentation updates as state transitions.
+-->
+
+| Event/Change | Affected Document | Action Required | Phase |
+|--------------|-------------------|-----------------|-------|
+| [e.g., Added Redis cache] | Architecture Diagram | Update component diagram | Phase N |
+| [e.g., New auth flow] | Security Policies | Document OAuth2 integration | Phase N |
+| [e.g., Breaking API change] | API Changelog | Create ADR for versioning | Phase N |
+| [e.g., Performance optimization] | Benchmarks | Record new baseline metrics | Phase N |
+
+## Gap Analysis
+
+<!--
+  ACTION REQUIRED: Identify missing essential artifacts that block this feature.
+  
+  BOOTSTRAPPING: If critical docs are missing, Phase N must create them.
+-->
+
+### Missing Artifacts
+
+| Missing Artifact | Required For | Bootstrap Priority | Owner |
+|------------------|--------------|-------------------|-------|
+| [e.g., Database ER Diagram] | Data model design | High | Backend Team |
+| [e.g., Deployment Runbook] | Production release | Medium | DevOps |
+
+### Bootstrapping Tasks
+
+> These tasks will be added to Phase N (System Convergence) of tasks.md
+
+- [ ] Create missing [artifact name] in [location]
+- [ ] Update System Map to reference new artifact
+- [ ] Notify [team] of new documentation availability

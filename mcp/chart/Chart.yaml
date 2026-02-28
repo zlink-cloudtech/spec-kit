@@ -1,0 +1,18 @@
+apiVersion: v2
+name: speckit-mcp-server
+description: Helm chart for deploying the Speckit MCP (Model Context Protocol) server
+type: application
+version: 0.0.0-placeholder
+appVersion: 0.0.0-placeholder
+keywords:
+  - mcp
+  - model-context-protocol
+  - speckit
+  - ai
+  - development
+home: https://github.com/speckit/spec-kit
+sources:
+  - https://github.com/speckit/spec-kit
+maintainers:
+  - name: Speckit Team
+    email: team@speckit.dev

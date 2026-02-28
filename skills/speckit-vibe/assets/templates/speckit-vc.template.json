@@ -1,0 +1,20 @@
+{
+  "agent": "copilot",
+  "log_level": "INFO",
+  "max_parallel": 3,
+  "auto_learning": true,
+  "agents_md_path": "AGENTS.md",
+  "timeout_minutes": 30,
+  "retry_count": 2,
+  "session_isolation": true,
+  "spec_vibes_dir": "spec-vibes",
+  "agent_config": {
+    "copilot": {
+      "model": "claude-sonnet-4.5",
+      "allow_all": true,
+      "excluded_tools": ["skill(speckit-vibe)"],
+      "allow_paths": [],
+      "allow_urls": []
+    }
+  }
+}

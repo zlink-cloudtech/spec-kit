@@ -152,6 +152,16 @@ Finally, implement the solution:
 /speckit.implement
 ```
 
+## Deploying MCP Server to Kubernetes (Optional)
+
+If you want to deploy the Speckit MCP Server to Kubernetes, install it via Helm:
+
+```bash
+helm install my-mcp oci://ghcr.io/zlink-cloudtech/speckit-mcp-server --version <version>
+```
+
+The chart supports image-based and NPM-based deployment modes. For detailed instructions, see the [Helm Deployment Guide](helm-deployment.md) and the [Chart README](../mcp/chart/README.md).
+
 ## Deploying Release Server (Optional)
 
 If you need to host your own `spec-kit` templates, you can deploy the Release Server to your Kubernetes cluster.

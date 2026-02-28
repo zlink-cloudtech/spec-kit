@@ -1,0 +1,75 @@
+# Default values for speckit-mcp-server Helm chart
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Deployment mode: "image" for container image deployment, "npm" for runtime package installation
+mode: image
+
+# Container image configuration (used when mode=image)
+image:
+  repository: ghcr.io/speckit/mcp-server
+  tag: latest
+  pullPolicy: IfNotPresent
+  # pullSecrets:
+  #   - name: regcred
+
+# NPM package configuration (used when mode=npm)
+npm:
+  package: "@speckit/mcp-server"
+  version: latest
+  registry: https://registry.npmjs.org
+  # authSecret: npm-auth-secret
+
+# Number of pod replicas
+replicas: 1
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+  annotations: {}
+
+# Resource requests and limits
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Node selector for pod scheduling
+nodeSelector: {}
+
+# Tolerations for pod scheduling
+tolerations: []
+
+# Affinity rules for pod scheduling
+affinity: {}
+
+# Ingress configuration (mutually exclusive with httpRoute)
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: mcp.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: mcp-tls
+  #    hosts:
+  #      - mcp.example.com
+
+# Gateway API HTTPRoute configuration (mutually exclusive with ingress)
+httpRoute:
+  enabled: false
+  gatewayName: ""
+  gatewayNamespace: ""  # Defaults to release namespace if not specified
+  hostnames:
+    - mcp.example.com
+  annotations: {}

@@ -3,6 +3,8 @@
 [CmdletBinding()]
 param(
     [switch]$Json,
+    [ValidateSet('feat', 'bug', 'hotfix', 'refactor', 'docs', 'chore')]
+    [string]$Type = 'feat',
     [string]$ShortName,
     [int]$Number = 0,
     [string]$SpecDir,
@@ -14,10 +16,11 @@ $ErrorActionPreference = 'Stop'
 
 # Show help if requested
 if ($Help) {
-    Write-Host "Usage: ./create-new-feature.ps1 [-Json] [-ShortName <name>] [-Number N] [-SpecDir <path>] <feature description>"
+    Write-Host "Usage: ./create-new-feature.ps1 [-Json] [-Type <type>] [-ShortName <name>] [-Number N] [-SpecDir <path>] <feature description>"
     Write-Host ""
     Write-Host "Options:"
     Write-Host "  -Json               Output in JSON format"
+    Write-Host "  -Type <type>        Branch type prefix (feat, bug, hotfix, refactor, docs, chore). Default: feat"
     Write-Host "  -ShortName <name>   Provide a custom short name (2-4 words) for the branch"
     Write-Host "  -Number N           Specify branch number manually (overrides auto-detection)"
     Write-Host "  -SpecDir <path>     Use existing directory instead of creating new one"
@@ -25,14 +28,15 @@ if ($Help) {
     Write-Host ""
     Write-Host "Examples:"
     Write-Host "  ./create-new-feature.ps1 'Add user authentication system' -ShortName 'user-auth'"
-    Write-Host "  ./create-new-feature.ps1 'Implement OAuth2 integration for API'"
+    Write-Host "  ./create-new-feature.ps1 -Type bug 'Fix login timeout issue'"
+    Write-Host "  ./create-new-feature.ps1 -Type hotfix 'Emergency DB connection fix' -Number 5"
     Write-Host "  ./create-new-feature.ps1 -SpecDir specs/001-oauth-integration 'Add OAuth2 authentication'"
     exit 0
 }
 
 # Check if feature description provided
 if (-not $FeatureDescription -or $FeatureDescription.Count -eq 0) {
-    Write-Error "Usage: ./create-new-feature.ps1 [-Json] [-ShortName <name>] <feature description>"
+    Write-Error "Usage: ./create-new-feature.ps1 [-Json] [-Type <type>] [-ShortName <name>] <feature description>"
     exit 1
 }
 
@@ -88,9 +92,9 @@ function Get-HighestNumberFromBranches {
                 # Clean branch name: remove leading markers and remote prefixes
                 $cleanBranch = $branch.Trim() -replace '^\*?\s+', '' -replace '^remotes/[^/]+/', ''
                 
-                # Extract feature number if branch matches pattern ###-*
-                if ($cleanBranch -match '^(\d+)-') {
-                    $num = [int]$matches[1]
+                # Extract feature number if branch matches pattern type/###-* (new format)
+                if ($cleanBranch -match '^(feat|bug|hotfix|refactor|docs|chore)/(\d{3})-') {
+                    $num = [int]$matches[2]
                     if ($num -gt $highest) { $highest = $num }
                 }
             }
@@ -196,11 +200,14 @@ if ($SpecDir) {
     Write-Warning "[specify] Using existing directory: $SpecDir"
     
     $result = Validate-SpecDir -SpecDir $SpecDir -RepoRoot $repoRoot
-    $branchName = $result.BranchName
+    $specName = $result.BranchName
     $featureDir = $result.FeatureDir
     
+    # Build full branch name with type prefix
+    $branchName = "$Type/$specName"
+    
     # Extract feature number
-    if ($branchName -match '^(\d{3})') {
+    if ($specName -match '^(\d{3})') {
         $featureNum = $matches[1]
     } else {
         $featureNum = "000" # Should be caught by validation, but fallback just in case
@@ -301,15 +308,16 @@ if ($SpecDir) {
     }
 
     $featureNum = ('{0:000}' -f $Number)
-    $branchName = "$featureNum-$branchSuffix"
+    $branchName = "$Type/$featureNum-$branchSuffix"
 
     # GitHub enforces a 244-byte limit on branch names
     # Validate and truncate if necessary
     $maxBranchLength = 244
     if ($branchName.Length -gt $maxBranchLength) {
         # Calculate how much we need to trim from suffix
-        # Account for: feature number (3) + hyphen (1) = 4 chars
-        $maxSuffixLength = $maxBranchLength - 4
+        # Account for: type/ (variable) + feature number (3) + hyphen (1)
+        $typePrefixLength = $Type.Length + 1
+        $maxSuffixLength = $maxBranchLength - $typePrefixLength - 4
         
         # Truncate suffix
         $truncatedSuffix = $branchSuffix.Substring(0, [Math]::Min($branchSuffix.Length, $maxSuffixLength))
@@ -317,7 +325,7 @@ if ($SpecDir) {
         $truncatedSuffix = $truncatedSuffix -replace '-$', ''
         
         $originalBranchName = $branchName
-        $branchName = "$featureNum-$truncatedSuffix"
+        $branchName = "$Type/$featureNum-$truncatedSuffix"
         
         Write-Warning "[specify] Branch name exceeded GitHub's 244-byte limit"
         Write-Warning "[specify] Original: $originalBranchName ($($originalBranchName.Length) bytes)"
@@ -334,7 +342,7 @@ if ($SpecDir) {
         Write-Warning "[specify] Warning: Git repository not detected; skipped branch creation for $branchName"
     }
 
-    $featureDir = Join-Path $specsDir $branchName
+    $featureDir = Join-Path $specsDir "$featureNum-$branchSuffix"
     New-Item -ItemType Directory -Path $featureDir -Force | Out-Null
 }
 
@@ -354,6 +362,7 @@ if ($Json) {
         BRANCH_NAME = $branchName
         SPEC_FILE = $specFile
         FEATURE_NUM = $featureNum
+        BRANCH_TYPE = $Type
         HAS_GIT = $hasGit
     }
     $obj | ConvertTo-Json -Compress
@@ -361,6 +370,7 @@ if ($Json) {
     Write-Output "BRANCH_NAME: $branchName"
     Write-Output "SPEC_FILE: $specFile"
     Write-Output "FEATURE_NUM: $featureNum"
+    Write-Output "BRANCH_TYPE: $Type"
     Write-Output "HAS_GIT: $hasGit"
     Write-Output "SPECIFY_FEATURE environment variable set to: $branchName"
 }

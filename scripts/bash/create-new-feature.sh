@@ -6,6 +6,8 @@ JSON_MODE=false
 SHORT_NAME=""
 BRANCH_NUMBER=""
 SPEC_DIR=""
+BRANCH_TYPE="feat"
+VALID_TYPES="feat bug hotfix refactor docs chore"
 ARGS=()
 i=1
 while [ $i -le $# ]; do
@@ -54,11 +56,30 @@ while [ $i -le $# ]; do
             fi
             SPEC_DIR="$next_arg"
             ;;
+        --type)
+            if [ $((i + 1)) -gt $# ]; then
+                echo 'Error: --type requires a value' >&2
+                exit 1
+            fi
+            i=$((i + 1))
+            next_arg="${!i}"
+            if [[ "$next_arg" == --* ]]; then
+                echo 'Error: --type requires a value' >&2
+                exit 1
+            fi
+            # Validate type
+            if ! echo "$VALID_TYPES" | grep -qw "$next_arg"; then
+                echo "Error: Invalid branch type '$next_arg'. Valid types: $VALID_TYPES" >&2
+                exit 1
+            fi
+            BRANCH_TYPE="$next_arg"
+            ;;
         --help|-h) 
-            echo "Usage: $0 [--json] [--short-name <name>] [--number N] [--spec-dir <path>] <feature_description>"
+            echo "Usage: $0 [--json] [--type <type>] [--short-name <name>] [--number N] [--spec-dir <path>] <feature_description>"
             echo ""
             echo "Options:"
             echo "  --json              Output in JSON format"
+            echo "  --type <type>       Branch type prefix (feat, bug, hotfix, refactor, docs, chore). Default: feat"
             echo "  --short-name <name> Provide a custom short name (2-4 words) for the branch"
             echo "  --number N          Specify branch number manually (overrides auto-detection)"
             echo "  --spec-dir <path>   Use existing directory instead of creating new one"
@@ -66,7 +87,8 @@ while [ $i -le $# ]; do
             echo ""
             echo "Examples:"
             echo "  $0 'Add user authentication system' --short-name 'user-auth'"
-            echo "  $0 'Implement OAuth2 integration for API' --number 5"
+            echo "  $0 --type bug 'Fix login timeout issue'"
+            echo "  $0 --type hotfix 'Emergency DB connection fix' --number 5"
             echo "  $0 --spec-dir specs/001-oauth-integration/ 'Add OAuth2 authentication'"
             exit 0
             ;;
@@ -79,7 +101,7 @@ done
 
 FEATURE_DESCRIPTION="${ARGS[*]}"
 if [ -z "$FEATURE_DESCRIPTION" ]; then
-    echo "Usage: $0 [--json] [--short-name <name>] [--number N] <feature_description>" >&2
+    echo "Usage: $0 [--json] [--type <type>] [--short-name <name>] [--number N] <feature_description>" >&2
     exit 1
 fi
 
@@ -128,9 +150,9 @@ get_highest_from_branches() {
             # Clean branch name: remove leading markers and remote prefixes
             clean_branch=$(echo "$branch" | sed 's/^[* ]*//; s|^remotes/[^/]*/||')
             
-            # Extract feature number if branch matches pattern ###-*
-            if echo "$clean_branch" | grep -q '^[0-9]\{3\}-'; then
-                number=$(echo "$clean_branch" | grep -o '^[0-9]\{3\}' || echo "0")
+            # Extract feature number if branch matches pattern type/###-* (new format)
+            if echo "$clean_branch" | grep -qE '^(feat|bug|hotfix|refactor|docs|chore)/[0-9]{3}-'; then
+                number=$(echo "$clean_branch" | sed 's|^[^/]*/||' | grep -o '^[0-9]\{3\}' || echo "0")
                 number=$((10#$number))
                 if [ "$number" -gt "$highest" ]; then
                     highest=$number
@@ -206,7 +228,7 @@ validate_spec_dir() {
         exit 1
     fi
     
-    # Return the directory name as branch name
+    # Return the directory name (without type prefix — type is added by caller)
     echo "$dir_name"
 }
 
@@ -237,11 +259,14 @@ if [ -n "$SPEC_DIR" ]; then
     # Mode A: Use existing directory
     >&2 echo "[specify] Using existing directory: $SPEC_DIR"
     
-    # Validate directory and extract branch name
-    BRANCH_NAME=$(validate_spec_dir "$SPEC_DIR" "$REPO_ROOT")
+    # Validate directory and extract spec name (without type prefix)
+    SPEC_NAME=$(validate_spec_dir "$SPEC_DIR" "$REPO_ROOT")
     
-    # Extract feature number from branch name
-    FEATURE_NUM=$(echo "$BRANCH_NAME" | grep -o '^[0-9]\{3\}')
+    # Build full branch name with type prefix
+    BRANCH_NAME="${BRANCH_TYPE}/${SPEC_NAME}"
+    
+    # Extract feature number from spec name
+    FEATURE_NUM=$(echo "$SPEC_NAME" | grep -o '^[0-9]\{3\}')
     
     # Set feature directory to the validated spec-dir (absolute path)
     if [[ "$SPEC_DIR" != /* ]]; then
@@ -341,15 +366,16 @@ else
     
     # Force base-10 interpretation to prevent octal conversion (e.g., 010 → 8 in octal, but should be 10 in decimal)
     FEATURE_NUM=$(printf "%03d" "$((10#$BRANCH_NUMBER))")
-    BRANCH_NAME="${FEATURE_NUM}-${BRANCH_SUFFIX}"
+    BRANCH_NAME="${BRANCH_TYPE}/${FEATURE_NUM}-${BRANCH_SUFFIX}"
     
     # GitHub enforces a 244-byte limit on branch names
     # Validate and truncate if necessary
     MAX_BRANCH_LENGTH=244
     if [ ${#BRANCH_NAME} -gt $MAX_BRANCH_LENGTH ]; then
         # Calculate how much we need to trim from suffix
-        # Account for: feature number (3) + hyphen (1) = 4 chars
-        MAX_SUFFIX_LENGTH=$((MAX_BRANCH_LENGTH - 4))
+        # Account for: type/ (variable) + feature number (3) + hyphen (1)
+        TYPE_PREFIX_LENGTH=$(( ${#BRANCH_TYPE} + 1 ))
+        MAX_SUFFIX_LENGTH=$((MAX_BRANCH_LENGTH - TYPE_PREFIX_LENGTH - 4))
         
         # Truncate suffix at word boundary if possible
         TRUNCATED_SUFFIX=$(echo "$BRANCH_SUFFIX" | cut -c1-$MAX_SUFFIX_LENGTH)
@@ -357,7 +383,7 @@ else
         TRUNCATED_SUFFIX=$(echo "$TRUNCATED_SUFFIX" | sed 's/-$//')
         
         ORIGINAL_BRANCH_NAME="$BRANCH_NAME"
-        BRANCH_NAME="${FEATURE_NUM}-${TRUNCATED_SUFFIX}"
+        BRANCH_NAME="${BRANCH_TYPE}/${FEATURE_NUM}-${TRUNCATED_SUFFIX}"
         
         >&2 echo "[specify] Warning: Branch name exceeded GitHub's 244-byte limit"
         >&2 echo "[specify] Original: $ORIGINAL_BRANCH_NAME (${#ORIGINAL_BRANCH_NAME} bytes)"
@@ -370,7 +396,7 @@ else
         >&2 echo "[specify] Warning: Git repository not detected; skipped branch creation for $BRANCH_NAME"
     fi
     
-    FEATURE_DIR="$SPECS_DIR/$BRANCH_NAME"
+    FEATURE_DIR="$SPECS_DIR/${FEATURE_NUM}-${BRANCH_SUFFIX}"
     mkdir -p "$FEATURE_DIR"
 fi
 
@@ -382,10 +408,11 @@ if [ -f "$TEMPLATE" ]; then cp "$TEMPLATE" "$SPEC_FILE"; else touch "$SPEC_FILE"
 export SPECIFY_FEATURE="$BRANCH_NAME"
 
 if $JSON_MODE; then
-    printf '{"BRANCH_NAME":"%s","SPEC_FILE":"%s","FEATURE_NUM":"%s"}\n' "$BRANCH_NAME" "$SPEC_FILE" "$FEATURE_NUM"
+    printf '{"BRANCH_NAME":"%s","SPEC_FILE":"%s","FEATURE_NUM":"%s","BRANCH_TYPE":"%s"}\n' "$BRANCH_NAME" "$SPEC_FILE" "$FEATURE_NUM" "$BRANCH_TYPE"
 else
     echo "BRANCH_NAME: $BRANCH_NAME"
     echo "SPEC_FILE: $SPEC_FILE"
     echo "FEATURE_NUM: $FEATURE_NUM"
+    echo "BRANCH_TYPE: $BRANCH_TYPE"
     echo "SPECIFY_FEATURE environment variable set to: $BRANCH_NAME"
 fi

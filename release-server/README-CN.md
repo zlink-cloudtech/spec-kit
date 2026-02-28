@@ -74,7 +74,7 @@ docker run -p 8000:8000 \
   -e AUTH_TOKEN=your-secure-token \
   -e MAX_PACKAGES=20 \
   -v release-data:/data \
-  ghcr.io/zlink-cloudtech/speckit-rs:latest
+  ghcr.io/zlink-cloudtech/charts/speckit-rs:latest
 ```
 
 ### 使用 Docker Compose
@@ -83,7 +83,7 @@ docker run -p 8000:8000 \
 version: '3.8'
 services:
   release-server:
-    image: ghcr.io/zlink-cloudtech/speckit-rs:latest
+    image: ghcr.io/zlink-cloudtech/charts/speckit-rs:latest
     ports:
       - "8000:8000"
     environment:
@@ -314,7 +314,7 @@ PORT=8001 uvicorn release_server.main:app
 ## 资源
 
 - 📖 [Spec Kit 文档](../docs/README.md)
-- 🐋 [Docker Hub](https://ghcr.io/zlink-cloudtech/speckit-rs)
+- 🐋 [Docker Hub](https://ghcr.io/zlink-cloudtech/charts/speckit-rs)
 - 📦 [Helm Charts](chart/README.md)
 - 🛠️ [Spec Kit 仓库](https://github.com/zlink-cloudtech/spec-kit)
 - 📝 [OpenAPI 规范](openapi.yaml)

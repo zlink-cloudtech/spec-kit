@@ -145,7 +145,7 @@ Some IDE-based agents (like Kilo Code, Windsurf) may show **duplicate slash comm
 
 ```bash
 # Navigate to the agent's commands folder
-cd .kilocode/rules/
+cd .kilocode/workflows/
 
 # List files and identify duplicates
 ls -la
@@ -197,8 +197,8 @@ mv /tmp/constitution-backup.md .specify/memory/constitution.md
 This happens with IDE-based agents (Kilo Code, Windsurf, Roo Code, etc.).
 
 ```bash
-# Find the agent folder (example: .kilocode/rules/)
-cd .kilocode/rules/
+# Find the agent folder (example: .kilocode/workflows/)
+cd .kilocode/workflows/
 
 # List all files
 ls -la
@@ -264,10 +264,10 @@ If you use `--no-git`, you'll need to manage feature directories manually:
 
 ```bash
 # Bash/Zsh
-export SPECIFY_FEATURE="001-my-feature"
+export SPECIFY_FEATURE="feat/001-my-feature"
 
 # PowerShell
-$env:SPECIFY_FEATURE = "001-my-feature"
+$env:SPECIFY_FEATURE = "feat/001-my-feature"
 ```
 
 This tells Spec Kit which feature directory to use when creating specs, plans, and tasks.

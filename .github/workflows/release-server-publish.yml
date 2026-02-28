@@ -14,8 +14,8 @@ on:
       version:
         description: 'Version to release (e.g. 1.0.0)'
         required: false
-      is_test:
-        description: 'Add -test suffix to version'
+      dry_run:
+        description: 'Dry run — build & package only, skip push/publish'
         type: boolean
         default: false
 
@@ -85,10 +85,6 @@ jobs:
             VERSION="$CALC_VERSION"
           fi
 
-          if [ "${{ github.event.inputs.is_test }}" == "true" ] || [ "${{ env.IS_TEST }}" == "true" ]; then
-            VERSION="${VERSION}-test"
-          fi
-          
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "Using version: $VERSION"
 
@@ -132,7 +128,7 @@ jobs:
           .github/workflows/scripts/update-release-server-version.sh ${{ steps.version.outputs.VERSION }}
 
       - name: Log in to GHCR
-        if: steps.check_release.outputs.exists == 'false'
+        if: steps.check_release.outputs.exists == 'false' && github.event.inputs.dry_run != 'true'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -159,7 +155,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./release-server
-          push: true
+          push: ${{ github.event.inputs.dry_run != 'true' }}
+          load: ${{ github.event.inputs.dry_run == 'true' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
@@ -184,9 +181,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_ACTOR: ${{ github.actor }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
 
       - name: Create Release
-        if: steps.check_release.outputs.exists == 'false'
+        if: steps.check_release.outputs.exists == 'false' && github.event.inputs.dry_run != 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: release-server-v${{ steps.version.outputs.VERSION }}
@@ -204,7 +202,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit version bump
-        if: steps.check_release.outputs.exists == 'false'
+        if: steps.check_release.outputs.exists == 'false' && github.event.inputs.dry_run != 'true'
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'

@@ -1,0 +1,302 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Speckit MCP Server Helm Chart Values",
+  "description": "Configuration schema for deploying the Speckit MCP Server via Helm",
+  "type": "object",
+  "required": ["mode"],
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": ["image", "npm"],
+      "default": "image",
+      "description": "Deployment mode: 'image' for container image deployment, 'npm' for runtime package installation"
+    },
+    "image": {
+      "type": "object",
+      "description": "Container image configuration (required when mode='image')",
+      "properties": {
+        "repository": {
+          "type": "string",
+          "default": "ghcr.io/speckit/mcp-server",
+          "description": "Docker image repository"
+        },
+        "tag": {
+          "type": "string",
+          "default": "latest",
+          "description": "Image tag (version)"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "enum": ["Always", "IfNotPresent", "Never"],
+          "default": "IfNotPresent",
+          "description": "Image pull policy"
+        },
+        "pullSecrets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Names of Secrets for pulling images from private registries"
+        }
+      },
+      "required": ["repository", "tag"]
+    },
+    "npm": {
+      "type": "object",
+      "description": "NPM package configuration (required when mode='npm')",
+      "properties": {
+        "package": {
+          "type": "string",
+          "default": "@speckit/mcp-server",
+          "description": "NPM package name"
+        },
+        "version": {
+          "type": "string",
+          "default": "latest",
+          "description": "NPM package version"
+        },
+        "registry": {
+          "type": "string",
+          "default": "https://registry.npmjs.org",
+          "description": "NPM registry URL"
+        },
+        "authSecret": {
+          "type": "string",
+          "description": "Name of Kubernetes Secret containing .npmrc for authentication"
+        }
+      },
+      "required": ["package", "registry"]
+    },
+    "replicas": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 1,
+      "description": "Number of pod replicas"
+    },
+    "service": {
+      "type": "object",
+      "description": "Kubernetes Service configuration",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["ClusterIP", "NodePort", "LoadBalancer"],
+          "default": "ClusterIP",
+          "description": "Service type"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 8080,
+          "description": "Service port"
+        },
+        "targetPort": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 8080,
+          "description": "Target port on pods"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Service annotations"
+        }
+      },
+      "required": ["type", "port", "targetPort"]
+    },
+    "ingress": {
+      "type": "object",
+      "description": "Ingress configuration (mutually exclusive with httpRoute)",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable Ingress resource creation"
+        },
+        "className": {
+          "type": "string",
+          "description": "IngressClass name"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Ingress annotations"
+        },
+        "hosts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "host": {
+                "type": "string",
+                "description": "Hostname"
+              },
+              "paths": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "URL path"
+                    },
+                    "pathType": {
+                      "type": "string",
+                      "enum": ["Prefix", "Exact", "ImplementationSpecific"],
+                      "default": "Prefix",
+                      "description": "Path matching type"
+                    }
+                  },
+                  "required": ["path", "pathType"]
+                }
+              }
+            },
+            "required": ["host", "paths"]
+          },
+          "description": "Ingress host rules"
+        },
+        "tls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "secretName": {
+                "type": "string",
+                "description": "Name of Secret containing TLS certificate"
+              },
+              "hosts": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "List of hosts covered by the certificate"
+              }
+            },
+            "required": ["secretName", "hosts"]
+          },
+          "description": "TLS configuration"
+        }
+      },
+      "required": ["enabled"]
+    },
+    "httpRoute": {
+      "type": "object",
+      "description": "Gateway API HTTPRoute configuration (mutually exclusive with ingress)",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable HTTPRoute resource creation"
+        },
+        "gatewayName": {
+          "type": "string",
+          "description": "Name of the Gateway resource to attach to (required when enabled)"
+        },
+        "gatewayNamespace": {
+          "type": "string",
+          "description": "Namespace of the Gateway (defaults to release namespace)"
+        },
+        "hostnames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of hostnames for HTTP routing"
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "HTTPRoute annotations"
+        }
+      },
+      "required": ["enabled"]
+    },
+    "resources": {
+      "type": "object",
+      "description": "Container resource requests and limits",
+      "properties": {
+        "requests": {
+          "type": "object",
+          "properties": {
+            "cpu": {
+              "type": "string",
+              "default": "100m",
+              "description": "CPU request (e.g., '100m', '0.5')"
+            },
+            "memory": {
+              "type": "string",
+              "default": "128Mi",
+              "description": "Memory request (e.g., '128Mi', '1Gi')"
+            }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "properties": {
+            "cpu": {
+              "type": "string",
+              "default": "200m",
+              "description": "CPU limit"
+            },
+            "memory": {
+              "type": "string",
+              "default": "256Mi",
+              "description": "Memory limit"
+            }
+          }
+        }
+      }
+    },
+    "nodeSelector": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Node selector labels for pod scheduling"
+    },
+    "tolerations": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "Pod tolerations for tainted nodes"
+    },
+    "affinity": {
+      "type": "object",
+      "description": "Pod affinity and anti-affinity rules"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "image"
+          }
+        }
+      },
+      "then": {
+        "required": ["image"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "npm"
+          }
+        }
+      },
+      "then": {
+        "required": ["npm"]
+      }
+    }
+  ]
+}

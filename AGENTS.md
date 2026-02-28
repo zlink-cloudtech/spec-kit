@@ -10,9 +10,149 @@ The toolkit supports multiple AI coding assistants, allowing teams to use their 
 
 ---
 
+## Project Architecture
+
+### Directory Structure
+
+```text
+spec-kit/
+├── src/specify_cli/       # Specify CLI source (Python/Typer)
+│   └── __init__.py        # Main CLI entry point — AGENT_CONFIG, init(), check(), version()
+├── scripts/
+│   ├── bash/              # Bash scripts for feature creation, context update, common utilities
+│   ├── powershell/        # PowerShell equivalents of all bash scripts
+│   └── resolve-skills.py  # Phase-based skill resolver (reads .speckit.yaml)
+├── templates/
+│   ├── commands/          # Slash command templates (specify, clarify, plan, tasks, implement, converge, etc.)
+│   ├── instructions/      # Agent instruction templates
+│   ├── spec-template.md, plan-template.md, tasks-template.md, system-map-template.md, etc.
+│   └── speckit-config-template.yaml
+├── skills/                # AI agent skill personas
+│   ├── speckit-architect/     # Plan phase — high-level design, ADRs, gap analysis
+│   ├── speckit-developer/     # Implement/tasks phase — TDD, clean code
+│   ├── speckit-librarian/     # Converge phase — documentation, system map
+│   ├── speckit-tech-lead/     # Tasks phase — task planning, dependency management
+│   ├── speckit-vibe/          # Autonomous vibe coding workflow
+│   ├── release-server-developer/  # Release server management
+│   ├── skill-creator/        # Meta-skill for creating new skills
+│   ├── readme-creator/       # README generation
+│   ├── mcp-builder/          # MCP server creation
+│   └── speckit-*/             # Other speckit-prefixed skills
+├── docs/                  # Project documentation
+├── specs/                 # Feature specification directories (###-feature-name/)
+├── tests/                 # Test suite
+├── release-server/        # Release server component (Docker-based)
+├── mcp/                   # MCP Helm chart deployment
+├── .devcontainer/         # Devcontainer configuration
+└── pyproject.toml         # Project metadata (version, dependencies)
+```
+
+### 6-Phase Lifecycle
+
+The Spec-Driven Development lifecycle consists of 6 sequential phases:
+
+```text
+Specify → Clarify → Plan → Task → Implement → Converge
+```
+
+| Phase | Command | Skill Persona | Description |
+|-------|---------|---------------|-------------|
+| **Specify** | `/speckit.specify` | — | Create feature specification from natural language |
+| **Clarify** | `/speckit.clarify` | — | Ask targeted questions to de-risk ambiguities (optional) |
+| **Plan** | `/speckit.plan` | speckit-architect | Design architecture, ADRs, data models, contracts |
+| **Task** | `/speckit.tasks` | speckit-tech-lead, speckit-developer | Generate dependency-ordered tasks with CONVERGENCE_BOUNDARY |
+| **Implement** | `/speckit.implement` | speckit-developer | Execute Phases 1 through N-1 (hard stop at CONVERGENCE_BOUNDARY) |
+| **Converge** | `/speckit.converge` | speckit-librarian | Phase N — update docs, ADRs, system map, close gaps |
+
+**Additional Commands:**
+
+| Command | Purpose |
+|---------|---------|
+| `/speckit.constitution` | Establish project principles and governance |
+| `/speckit.analyze` | Cross-artifact consistency check (after tasks, before implement) |
+| `/speckit.checklist` | Generate quality checklists for requirements validation |
+| `/speckit.taskstoissues` | Convert tasks into GitHub issues for team collaboration |
+
+### Branch Naming Convention
+
+Branches use a **`type/###-name`** format with 6 supported types:
+
+```text
+feat/001-user-auth        # New feature
+bug/002-login-crash       # Bug fix
+hotfix/003-db-fix         # Emergency production fix
+refactor/004-auth-module  # Code restructuring
+docs/005-api-guide        # Documentation
+chore/006-deps-update     # Build/tooling/dependencies
+```
+
+**Key rules:**
+
+- Default type is `feat`; set via `--type` (bash) or `-Type` (PowerShell)
+- **Global sequential numbering** — all types share one counter (001, 002, 003...)
+- **Specs directory stays flat** — `feat/001-user-auth` maps to `specs/001-user-auth/`
+- **`strip_branch_type()` / `Get-BranchWithoutType`** — helper functions strip the type prefix for specs mapping
+- **Validation regex**: `^(feat|bug|hotfix|refactor|docs|chore)/[0-9]{3}-`
+- **`SPECIFY_FEATURE`** env var stores the full branch name including type prefix (e.g., `feat/001-user-auth`)
+- JSON output includes `BRANCH_TYPE` field
+
+### Skill Architecture
+
+Skills use the **Adapter Pattern** — each skill has:
+
+- **`SKILL.md`**: Portable persona definition (no SpecKit-specific paths)
+- **`speckit-adapter.yaml`**: SpecKit integration sidecar with phase hooks
+
+```yaml
+# Example: speckit-adapter.yaml
+name: speckit-architect
+hooks:
+  - phase: plan
+    priority: 100
+    context: SKILL.md
+    instructions: |
+      ## SpecKit Integration
+      - Read memory/system-map.md to identify touched components
+      - Add Documentation State Matrix entries to plan.md
+```
+
+**Skill Resolution**: `scripts/python/resolve-skills.py` discovers skills via `.speckit.yaml` configuration, matches phase hooks, sorts by priority, and injects content into LLM prompts.
+
+### Configuration (`.speckit.yaml`)
+
+Optional project-level configuration:
+
+```yaml
+version: "2.0.0"
+skills:
+  scan_dirs:
+    - skills/
+    - .specify/skills/
+    - .github/skills/
+    - .claude/skills/
+memory:
+  system_map: .specify/memory/system-map.md
+  constitution: .specify/memory/constitution.md
+```
+
+### CONVERGENCE_BOUNDARY
+
+Tasks are split into two groups by a `<!-- CONVERGENCE_BOUNDARY -->` marker in `tasks.md`:
+
+- **Phases 1 through N-1**: Implementation tasks executed by `/speckit.implement`
+- **Phase N**: Documentation convergence tasks executed by `/speckit.converge`
+
+`/speckit.implement` enforces a **hard stop** at the boundary marker. Phase N tasks can only run via `/speckit.converge`.
+
+---
+
 ## General practices
 
 - Any changes to `__init__.py` for the Specify CLI require a version rev in `pyproject.toml` and addition of entries to `CHANGELOG.md`.
+- Both bash (`scripts/bash/`) and PowerShell (`scripts/powershell/`) scripts must be kept in sync — every feature must be implemented in both.
+- Branch names must follow the `type/###-name` format (see Branch Naming Convention above).
+- Spec directories use the flat `###-name` format (without type prefix) under `specs/`.
+- When modifying slash command templates in `templates/commands/`, ensure examples and workflow descriptions match the current script parameters.
 
 ## Adding New Agent Support
 
@@ -37,11 +177,11 @@ Specify supports multiple AI agents by generating agent-specific command files a
 | **Cursor**                 | `.cursor/commands/`    | Markdown | `cursor-agent`  | N/A                     | `.specify/skills/`      | Cursor CLI                  |
 | **Qwen Code**              | `.qwen/commands/`      | TOML     | `qwen`          | N/A                     | `.specify/skills/`      | Alibaba's Qwen Code CLI     |
 | **opencode**               | `.opencode/command/`   | Markdown | `opencode`      | N/A                     | `.specify/skills/`      | opencode CLI                |
-| **Codex CLI**              | `.codex/commands/`     | Markdown | `codex`         | N/A                     | `.specify/skills/`      | Codex CLI                   |
+| **Codex CLI**              | `.codex/prompts/`      | Markdown | `codex`         | N/A                     | `.specify/skills/`      | Codex CLI                   |
 | **Windsurf**               | `.windsurf/workflows/` | Markdown | N/A (IDE-based) | N/A                     | `.specify/skills/`      | Windsurf IDE workflows      |
-| **Kilo Code**              | `.kilocode/rules/`     | Markdown | N/A (IDE-based) | N/A                     | `.specify/skills/`      | Kilo Code IDE               |
-| **Auggie CLI**             | `.augment/rules/`      | Markdown | `auggie`        | N/A                     | `.specify/skills/`      | Auggie CLI                  |
-| **Roo Code**               | `.roo/rules/`          | Markdown | N/A (IDE-based) | N/A                     | `.roo/skills/`          | Roo Code IDE                |
+| **Kilo Code**              | `.kilocode/workflows/` | Markdown | N/A (IDE-based) | N/A                     | `.specify/skills/`      | Kilo Code IDE               |
+| **Auggie CLI**             | `.augment/commands/`   | Markdown | `auggie`        | N/A                     | `.specify/skills/`      | Auggie CLI                  |
+| **Roo Code**               | `.roo/commands/`       | Markdown | N/A (IDE-based) | N/A                     | `.roo/skills/`          | Roo Code IDE                |
 | **CodeBuddy CLI**          | `.codebuddy/commands/` | Markdown | `codebuddy`     | N/A                     | `.specify/skills/`      | CodeBuddy CLI               |
 | **Qoder CLI**              | `.qoder/commands/`     | Markdown | `qoder`         | N/A                     | `.specify/skills/`      | Qoder CLI                   |
 | **Amazon Q Developer CLI** | `.amazonq/prompts/`    | Markdown | `q`             | N/A                     | `.specify/skills/`      | Amazon Q Developer CLI      |
@@ -126,7 +266,7 @@ case $agent in
 esac
 ```
 
-#### 4. Update GitHub Release Script
+#### 5. Update GitHub Release Script
 
 Modify `.github/workflows/scripts/create-github-release.sh` to include the new agent's packages:
 
@@ -138,7 +278,7 @@ gh release create "$VERSION" \
   # Add new agent packages here
 ```
 
-#### 5. Update Agent Context Scripts
+#### 6. Update Agent Context Scripts
 
 ##### Bash script (`scripts/bash/update-agent-context.sh`)
 
@@ -188,23 +328,46 @@ switch ($AgentType) {
 }
 ```
 
-#### 6. Update CLI Tool Checks (Optional)
+#### 7. Update CLI Tool Checks (if applicable)
 
-For agents that require CLI tools, add checks in the `check()` command and agent validation:
+CLI tool checks are handled automatically based on the `requires_cli` field in AGENT_CONFIG. The `check()` command loops through all agents and calls `check_tool(agent_key, tracker=tracker)` for those with `requires_cli: True`. IDE-based agents (`requires_cli: False`) are skipped automatically.
 
-```python
-# In check() command
-tracker.add("windsurf", "Windsurf IDE (optional)")
-windsurf_ok = check_tool_for_tracker("windsurf", "https://windsurf.com/", tracker)
+**No additional code changes needed** — just ensure `requires_cli` is set correctly in Step 1.
 
-# In init validation (only if CLI tool required)
-elif selected_ai == "windsurf":
-    if not check_tool("windsurf", "Install from: https://windsurf.com/"):
-        console.print("[red]Error:[/red] Windsurf CLI is required for Windsurf projects")
-        agent_tool_missing = True
+#### 8. Update Devcontainer Files (Optional)
+
+For agents that have VS Code extensions or require CLI installation, update the devcontainer configuration files:
+
+##### VS Code Extension-based Agents
+
+For agents available as VS Code extensions, add them to `.devcontainer/devcontainer.json`:
+
+```json
+{
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // ... existing extensions ...
+        "[New Agent Extension ID]"
+      ]
+    }
+  }
+}
 ```
 
-**Note**: CLI tool checks are now handled automatically based on the `requires_cli` field in AGENT_CONFIG. No additional code changes needed in the `check()` or `init()` commands - they automatically loop through AGENT_CONFIG and check tools as needed.
+##### CLI-based Agents
+
+For agents that require CLI tools, add installation commands to `.devcontainer/post-create.sh`:
+
+```bash
+#!/bin/bash
+
+# Existing installations...
+
+echo -e "\n🤖 Installing [New Agent Name] CLI..."
+# run_command "npm install -g [agent-cli-package]@latest"
+echo "✅ Done"
+```
 
 ## Adding New Skills for Agents
 
@@ -248,6 +411,27 @@ In the Spec-Driven Development (SDD) workflow, skills are considered the authori
 
     No additional configuration in `AGENT_CONFIG` is required for basic file distribution. If your agent requires specific instruction injection, you may need to update the instructions template manually.
 
+## Testing New Agent Integration
+
+1. **Build test**: Run package creation script locally
+2. **CLI test**: Test `specify init --ai <agent>` command
+3. **File generation**: Verify correct directory structure and files
+4. **Command validation**: Ensure generated commands work with the agent
+5. **Context update**: Test agent context update scripts
+6. **Branch naming**: Verify `create-new-feature.sh --type <type>` generates correct `type/###-name` branches
+7. **Skill resolution**: Test `resolve-skills.py` discovers and injects skills for all lifecycle phases
+
+## Common Pitfalls
+
+1. **Using shorthand keys instead of actual CLI tool names**: Always use the actual executable name as the AGENT_CONFIG key (e.g., `"cursor-agent"` not `"cursor"`). The `check_tool()` function uses `shutil.which(tool)` to find executables — if the key doesn't match the real tool name, you'll need special-case mappings everywhere.
+2. **Forgetting update scripts**: Both bash and PowerShell scripts must be updated when adding new agents.
+3. **Incorrect `requires_cli` value**: Set to `True` only for agents that actually have CLI tools to check; set to `False` for IDE-based agents.
+4. **Wrong argument format**: Use correct placeholder format for each agent type (`$ARGUMENTS` for Markdown, `{{args}}` for TOML).
+5. **Directory naming**: Follow agent-specific conventions exactly (check existing agents in the release script's `case` statement for patterns).
+6. **Help text inconsistency**: Update all user-facing text consistently (help strings, docstrings, README, error messages).
+7. **Branch type/specs mismatch**: Branch names include the type prefix (`feat/001-name`) but specs directories do NOT (`specs/001-name/`). Always use `strip_branch_type()` / `Get-BranchWithoutType` when mapping from branch to specs directory.
+8. **Forgetting CONVERGENCE_BOUNDARY**: When modifying task templates, ensure the `<!-- CONVERGENCE_BOUNDARY -->` marker is present to separate implementation and convergence phases.
+
 ## Important Design Decisions
 
 ### Using Actual CLI Tool Names as Keys
@@ -260,7 +444,7 @@ In the Spec-Driven Development (SDD) workflow, skills are considered the authori
 - If the key doesn't match the actual CLI tool name, you'll need special-case mappings throughout the codebase
 - This creates unnecessary complexity and maintenance burden
 
-**Example - The Cursor Lesson:**
+**Example — The Cursor Lesson:**
 
 ❌ **Wrong approach** (requires special-case mapping):
 
@@ -452,7 +636,7 @@ Different agents use different argument placeholders:
 - **Script placeholders**: `{SCRIPT}` (replaced with actual script path)
 - **Agent placeholders**: `__AGENT__` (replaced with agent name)
 
-## Testing New Agent Integration
+## Testing New Agent Integration (Summary)
 
 1. **Build test**: Run package creation script locally
 2. **CLI test**: Test `specify init --ai <agent>` command
@@ -460,7 +644,7 @@ Different agents use different argument placeholders:
 4. **Command validation**: Ensure generated commands work with the agent
 5. **Context update**: Test agent context update scripts
 
-## Common Pitfalls
+## Common Pitfalls (Summary)
 
 1. **Using shorthand keys instead of actual CLI tool names**: Always use the actual executable name as the AGENT_CONFIG key (e.g., `"cursor-agent"` not `"cursor"`). This prevents the need for special-case mappings throughout the codebase.
 2. **Forgetting update scripts**: Both bash and PowerShell scripts must be updated when adding new agents.

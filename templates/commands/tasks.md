@@ -12,6 +12,9 @@ handoffs:
 scripts:
   sh: scripts/bash/check-prerequisites.sh --json
   ps: scripts/powershell/check-prerequisites.ps1 -Json
+agent_scripts:
+  sh: scripts/bash/update-agent-context.sh __AGENT__ tasks
+  ps: scripts/powershell/update-agent-context.ps1 -AgentType __AGENT__ -Phase tasks
 ---
 
 ## User Input
@@ -45,6 +48,15 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Generate tasks organized by user story (see Task Generation Rules below)
    - Generate dependency graph showing user story completion order
    - Create parallel execution examples per user story
+   - **Phase N-1 & N Generation**:
+     - Generate "Phase N-1: Polish & Cross-Cutting Concerns" tasks (code cleanup, refactoring, security)
+     - Insert `<!-- CONVERGENCE_BOUNDARY -->` marker after Phase N-1
+     - Generate "Phase N: System Convergence" tasks based on:
+       - plan.md "Documentation State Matrix" → documentation update tasks
+       - plan.md "Gap Analysis" → bootstrapping tasks for missing artifacts
+       - System Map synchronization task
+       - ADR creation tasks (if architectural decisions were made)
+     - Label all Phase N tasks with `[Skill: speckit-librarian]`
    - Validate task completeness (each user story has all needed tasks, independently testable)
 
 4. **Generate tasks.md**: Use `templates/tasks-template.md` as structure, fill with:
@@ -76,7 +88,7 @@ The tasks.md should be immediately executable - each task must be specific enoug
 
 **CRITICAL**: Tasks MUST be organized by user story to enable independent implementation and testing.
 
-**Tests are OPTIONAL**: Only generate test tasks if explicitly requested in the feature specification or if user requests TDD approach.
+**Tests are REQUIRED**: All implementation tasks MUST have corresponding test tasks, in accordance with Article IV (Test-First Imperative) of the Constitution. Follow the Red-Green-Refactor cycle.
 
 ### Checklist Format (REQUIRED)
 
@@ -140,6 +152,8 @@ Every task MUST strictly follow this format:
 - **Phase 1**: Setup (project initialization)
 - **Phase 2**: Foundational (blocking prerequisites - MUST complete before user stories)
 - **Phase 3+**: User Stories in priority order (P1, P2, P3...)
-  - Within each story: Tests (if requested) → Models → Services → Endpoints → Integration
+  - Within each story: Tests → Models → Services → Endpoints → Integration
   - Each phase should be a complete, independently testable increment
-- **Final Phase**: Polish & Cross-Cutting Concerns
+- **Phase N-1**: Polish & Cross-Cutting Concerns (last phase executed by `/speckit.implement`)
+- `<!-- CONVERGENCE_BOUNDARY -->` — hard boundary marker
+- **Phase N**: System Convergence (executed by `/speckit.converge`, NOT by `/speckit.implement`)

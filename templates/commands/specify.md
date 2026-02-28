@@ -37,39 +37,51 @@ Given that feature description, do this:
    
    a. Extract the directory path from user input after `--spec-dir`
    
-   b. Run the script with the spec-dir parameter:
+   b. Determine the branch type: check if `--type <type>` is provided (default: `feat`). Valid types: `feat`, `bug`, `hotfix`, `refactor`, `docs`, `chore`.
+   
+   c. Run the script with the spec-dir and type parameters:
       ```bash
-      .specify/scripts/bash/create-new-feature.sh --json --spec-dir "specs/001-feature-name/" "$ARGUMENTS"
+      .specify/scripts/bash/create-new-feature.sh --json --type feat --spec-dir "specs/001-feature-name/" "$ARGUMENTS"
       ```
    
-   c. The script will:
+   d. The script will:
       - Validate the directory exists and is writable
-      - Extract branch name from directory path (e.g., `specs/001-oauth-integration/` → branch `001-oauth-integration`)
-      - Create or checkout the branch matching the directory name
+      - Extract spec name from directory path (e.g., `specs/001-oauth-integration/` → `001-oauth-integration`)
+      - Build branch name with type prefix (e.g., `feat/001-oauth-integration`)
+      - Create or checkout the branch
       - Initialize spec.md in the existing directory
    
-   d. Skip to step 3 (Load template)
+   e. Skip to step 3 (Load template)
    
    **Example usage**:
    ```bash
    /speckit.specify --spec-dir specs/001-oauth-integration/ "Add OAuth2 authentication"
+   /speckit.specify --type bug --spec-dir specs/002-login-crash/ "Fix login crash"
    ```
 
 3. **Mode B: Auto-Create Directory Workflow** (when `--spec-dir` NOT provided - original behavior):
 
-   a. **Generate a concise short name** (2-4 words) for the branch:
+   a. **Determine branch type**: Analyze the feature description to select the appropriate branch type, or use `--type <type>` if provided. Default: `feat`. Valid types: `feat`, `bug`, `hotfix`, `refactor`, `docs`, `chore`.
+      - Feature/new functionality → `feat`
+      - Bug fix → `bug`
+      - Emergency production fix → `hotfix`
+      - Code restructuring → `refactor`
+      - Documentation changes → `docs`
+      - Build/tooling/dependency changes → `chore`
+
+   b. **Generate a concise short name** (2-4 words) for the branch:
       - Analyze the feature description and extract the most meaningful keywords
       - Create a 2-4 word short name that captures the essence of the feature
-      - Use action-noun format when possible (e.g., "add-user-auth", "fix-payment-bug")
+      - Use action-noun format when possible (e.g., "user-auth", "payment-timeout")
       - Preserve technical terms and acronyms (OAuth2, API, JWT, etc.)
       - Keep it concise but descriptive enough to understand the feature at a glance
       - Examples:
-        - "I want to add user authentication" → "user-auth"
-        - "Implement OAuth2 integration for the API" → "oauth2-api-integration"
-        - "Create a dashboard for analytics" → "analytics-dashboard"
-        - "Fix payment processing timeout bug" → "fix-payment-timeout"
+        - "I want to add user authentication" → type: `feat`, short-name: "user-auth"
+        - "Fix payment processing timeout bug" → type: `bug`, short-name: "payment-timeout"
+        - "Emergency fix for database connection" → type: `hotfix`, short-name: "db-connection"
+        - "Refactor the authentication module" → type: `refactor`, short-name: "auth-module"
 
-   b. **Check for existing branches before creating new one**:
+   c. **Check for existing branches before creating new one**:
 
       i. First, fetch all remote branches to ensure we have the latest information:
 
@@ -78,8 +90,8 @@ Given that feature description, do this:
          ```
 
       ii. Find the highest feature number across all sources for the short-name:
-         - Remote branches: `git ls-remote --heads origin | grep -E 'refs/heads/[0-9]+-<short-name>$'`
-         - Local branches: `git branch | grep -E '^[* ]*[0-9]+-<short-name>$'`
+         - Remote branches: `git ls-remote --heads origin | grep -E 'refs/heads/(feat|bug|hotfix|refactor|docs|chore)/[0-9]+-'`
+         - Local branches: `git branch | grep -E '(feat|bug|hotfix|refactor|docs|chore)/[0-9]+-'`
          - Specs directories: Check for directories matching `specs/[0-9]+-<short-name>`
 
       iii. Determine the next available number:
@@ -87,10 +99,10 @@ Given that feature description, do this:
          - Find the highest number N
          - Use N+1 for the new branch number
 
-      iv. Run the script `{SCRIPT}` with the calculated number and short-name:
-         - Pass `--number N+1` and `--short-name "your-short-name"` along with the feature description
-         - Bash example: `{SCRIPT} --json --number 5 --short-name "user-auth" "Add user authentication"`
-         - PowerShell example: `{SCRIPT} -Json -Number 5 -ShortName "user-auth" "Add user authentication"`
+      iv. Run the script `{SCRIPT}` with the calculated number, type, and short-name:
+         - Pass `--type <type> --number N+1 --short-name "your-short-name"` along with the feature description
+         - Bash example: `{SCRIPT} --json --type feat --number 5 --short-name "user-auth" "Add user authentication"`
+         - PowerShell example: `{SCRIPT} -Json -Type feat -Number 5 -ShortName "user-auth" "Add user authentication"`
 
       **IMPORTANT**:
       - Check all three sources (remote branches, local branches, specs directories) to find the highest number
@@ -98,7 +110,8 @@ Given that feature description, do this:
       - If no existing branches/directories found with this short-name, start with number 1
       - You must only ever run this script once per feature
       - The JSON is provided in the terminal as output - always refer to it to get the actual content you're looking for
-      - The JSON output will contain BRANCH_NAME and SPEC_FILE paths
+      - The JSON output will contain BRANCH_NAME, SPEC_FILE, and BRANCH_TYPE
+      - Branch name format: `type/###-short-name` (e.g., `feat/001-user-auth`, `bug/002-login-crash`)
       - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot")
 
 4. **Load template and continue**: After either Mode A or B completes, continue with the rest of the workflow (load template, skill analysis, etc.)
@@ -243,9 +256,9 @@ Given that feature description, do this:
 
    d. **Update Checklist**: After each validation iteration, update the checklist file with current pass/fail status
 
-7. Report completion with branch name, spec file path, checklist results, and readiness for the next phase (`/speckit.clarify` or `/speckit.plan`).
+7. Report completion with branch name (including type prefix, e.g., `feat/001-user-auth`), branch type, spec file path, checklist results, and readiness for the next phase (`/speckit.clarify` or `/speckit.plan`).
 
-**NOTE:** The script creates and checks out the new branch and initializes the spec file before writing.
+**NOTE:** The script creates and checks out the new branch (with type prefix) and initializes the spec file before writing. Branch name format: `type/###-short-name`.
 
 ## General Guidelines
 

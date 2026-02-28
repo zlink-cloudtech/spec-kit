@@ -1,0 +1,11 @@
+{{- include "speckit-mcp-server.validateMode" . -}}
+{{- if .Values.config }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "speckit-mcp-server.fullname" . }}
+  labels:
+    {{- include "speckit-mcp-server.labels" . | nindent 4 }}
+data:
+  {{- toYaml .Values.config | nindent 2 }}
+{{- end }}
