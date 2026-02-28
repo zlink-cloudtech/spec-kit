@@ -62,6 +62,12 @@ has_git() {
     git rev-parse --show-toplevel >/dev/null 2>&1
 }
 
+# Strip branch type prefix (e.g., feat/001-user-auth → 001-user-auth)
+strip_branch_type() {
+    local branch="$1"
+    echo "$branch" | sed 's|^\(feat\|bug\|hotfix\|refactor\|docs\|chore\)/||'
+}
+
 check_feature_branch() {
     local branch="$1"
     local has_git_repo="$2"
@@ -72,28 +78,36 @@ check_feature_branch() {
         return 0
     fi
 
-    if [[ ! "$branch" =~ ^[0-9]{3}- ]]; then
+    if [[ ! "$branch" =~ ^(feat|bug|hotfix|refactor|docs|chore)/[0-9]{3}- ]]; then
         echo "ERROR: Not on a feature branch. Current branch: $branch" >&2
-        echo "Feature branches should be named like: 001-feature-name" >&2
+        echo "Feature branches should be named like: feat/001-feature-name" >&2
         return 1
     fi
 
     return 0
 }
 
-get_feature_dir() { echo "$1/specs/$2"; }
+get_feature_dir() {
+    local repo_root="$1"
+    local branch="$2"
+    local spec_name=$(strip_branch_type "$branch")
+    echo "$repo_root/specs/$spec_name"
+}
 
 # Find feature directory by numeric prefix instead of exact branch match
-# This allows multiple branches to work on the same spec (e.g., 004-fix-bug, 004-add-feature)
+# This allows multiple branches to work on the same spec (e.g., feat/004-fix-bug, bug/004-add-feature)
 find_feature_dir_by_prefix() {
     local repo_root="$1"
     local branch_name="$2"
     local specs_dir="$repo_root/specs"
 
-    # Extract numeric prefix from branch (e.g., "004" from "004-whatever")
-    if [[ ! "$branch_name" =~ ^([0-9]{3})- ]]; then
-        # If branch doesn't have numeric prefix, fall back to exact match
-        echo "$specs_dir/$branch_name"
+    # Strip type prefix if present (e.g., feat/004-whatever → 004-whatever)
+    local spec_name=$(strip_branch_type "$branch_name")
+
+    # Extract numeric prefix from spec name (e.g., "004" from "004-whatever")
+    if [[ ! "$spec_name" =~ ^([0-9]{3})- ]]; then
+        # If spec name doesn't have numeric prefix, fall back to exact match
+        echo "$specs_dir/$spec_name"
         return
     fi
 
@@ -111,8 +125,8 @@ find_feature_dir_by_prefix() {
 
     # Handle results
     if [[ ${#matches[@]} -eq 0 ]]; then
-        # No match found - return the branch name path (will fail later with clear error)
-        echo "$specs_dir/$branch_name"
+        # No match found - return the spec name path (will fail later with clear error)
+        echo "$specs_dir/$spec_name"
     elif [[ ${#matches[@]} -eq 1 ]]; then
         # Exactly one match - perfect!
         echo "$specs_dir/${matches[0]}"
@@ -120,7 +134,7 @@ find_feature_dir_by_prefix() {
         # Multiple matches - this shouldn't happen with proper naming convention
         echo "ERROR: Multiple spec directories found with prefix '$prefix': ${matches[*]}" >&2
         echo "Please ensure only one spec directory exists per numeric prefix." >&2
-        echo "$specs_dir/$branch_name"  # Return something to avoid breaking the script
+        echo "$specs_dir/$spec_name"  # Return something to avoid breaking the script
     fi
 }
 

@@ -48,7 +48,7 @@ The following table lists the configurable parameters of the Release Server char
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `image.repository` | Image repository | `ghcr.io/zlink-cloudtech/speckit-rs` |
+| `image.repository` | Image repository | `ghcr.io/zlink-cloudtech/charts/speckit-rs` |
 | `image.tag` | Image tag | `latest` |
 | `image.pullPolicy` | Image pull policy | `IfNotPresent` |
 | `imagePullSecrets` | Image pull secrets | `[]` |

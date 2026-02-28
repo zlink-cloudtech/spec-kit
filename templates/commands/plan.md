@@ -12,8 +12,8 @@ scripts:
   sh: scripts/bash/setup-plan.sh --json
   ps: scripts/powershell/setup-plan.ps1 -Json
 agent_scripts:
-  sh: scripts/bash/update-agent-context.sh __AGENT__
-  ps: scripts/powershell/update-agent-context.ps1 -AgentType __AGENT__
+  sh: scripts/bash/update-agent-context.sh __AGENT__ plan
+  ps: scripts/powershell/update-agent-context.ps1 -AgentType __AGENT__ -Phase plan
 ---
 
 ## User Input
@@ -34,6 +34,12 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Fill Technical Context (mark unknowns as "NEEDS CLARIFICATION")
    - Fill Constitution Check section from constitution
    - Evaluate gates (ERROR if violations unjustified)
+   - **System Map Integration** (if `memory/system-map.md` exists):
+     - Read `memory/system-map.md` and identify which components are touched by this feature
+     - Fill the "Relevant System Context" section with 3-5 key documents from the System Map
+     - Complete the "Documentation State Matrix" for all impacted documents (action: Create/Update/Review)
+     - Run "Gap Analysis" against the System Map's Essential Artifacts list
+     - For each missing essential artifact, add a Bootstrapping Task to Phase N
    - Phase 0: Generate research.md (resolve all NEEDS CLARIFICATION)
    - Phase 1: Generate data-model.md, contracts/, quickstart.md
    - Phase 1: Update agent context by running the agent script

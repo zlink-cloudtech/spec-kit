@@ -26,7 +26,10 @@ Relies on common helper functions in common.ps1
 param(
     [Parameter(Position=0)]
     [ValidateSet('claude','gemini','copilot','cursor-agent','qwen','opencode','codex','windsurf','kilocode','auggie','roo','codebuddy','amp','shai','q','bob','qoder')]
-    [string]$AgentType
+    [string]$AgentType,
+    
+    [Parameter(Position=1)]
+    [string]$Phase
 )
 
 $ErrorActionPreference = 'Stop'
@@ -104,13 +107,13 @@ function Write-Err {
 function Validate-Environment {
     if (-not $CURRENT_BRANCH) {
         Write-Err 'Unable to determine current feature'
-        if ($HAS_GIT) { Write-Info "Make sure you're on a feature branch" } else { Write-Info 'Set SPECIFY_FEATURE environment variable or create a feature first' }
+        if ($HAS_GIT) { Write-Info "Make sure you're on a feature branch (e.g., feat/001-feature-name)" } else { Write-Info 'Set SPECIFY_FEATURE environment variable or create a feature first' }
         exit 1
     }
     if (-not (Test-Path $NEW_PLAN)) {
         Write-Err "No plan.md found at $NEW_PLAN"
         Write-Info 'Ensure you are working on a feature with a corresponding spec directory'
-        if (-not $HAS_GIT) { Write-Info 'Use: $env:SPECIFY_FEATURE=your-feature-name or create a new feature first' }
+        if (-not $HAS_GIT) { Write-Info 'Use: $env:SPECIFY_FEATURE="feat/your-feature-name" or create a new feature first' }
         exit 1
     }
     if (-not (Test-Path $TEMPLATE_FILE)) {
@@ -337,6 +340,61 @@ function Update-ExistingAgentFile {
     return $true
 }
 
+function Update-SkillsSection {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$TargetFile,
+        [Parameter(Mandatory=$true)]
+        [string]$Phase
+    )
+    
+    $marker = '<!-- SPECKIT_ACTIVE_SKILLS -->'
+    Write-Info "Updating active skills for phase: $Phase"
+    
+    if (-not (Test-Path $TargetFile)) {
+        Write-Err "Target file does not exist: $TargetFile"
+        return $false
+    }
+    
+    # Read content and find marker position
+    $lines = Get-Content -LiteralPath $TargetFile -Encoding utf8
+    $output = New-Object System.Collections.Generic.List[string]
+    $markerFound = $false
+    
+    foreach ($line in $lines) {
+        if ($line -eq $marker) {
+            $markerFound = $true
+            break
+        }
+        $output.Add($line)
+    }
+    
+    # Add marker and skills content
+    $output.Add('')
+    $output.Add($marker)
+    
+    # Call Python resolver script
+    $resolverScript = Join-Path $REPO_ROOT 'scripts' 'resolve-skills.py'
+    if (Test-Path $resolverScript) {
+        try {
+            $skillsOutput = & python3 $resolverScript $Phase $REPO_ROOT 2>&1
+            if ($LASTEXITCODE -eq 0) {
+                $skillsOutput | ForEach-Object { $output.Add($_) }
+            } else {
+                Write-WarningMsg "Failed to resolve skills for phase $Phase"
+            }
+        } catch {
+            Write-WarningMsg "Error calling resolve-skills.py: $_"
+        }
+    } else {
+        Write-WarningMsg "Skill resolver script not found at $resolverScript"
+    }
+    
+    # Write back to file
+    Set-Content -LiteralPath $TargetFile -Value ($output -join [Environment]::NewLine) -Encoding utf8
+    return $true
+}
+
 function Update-AgentFile {
     param(
         [Parameter(Mandatory=$true)]
@@ -362,6 +420,16 @@ function Update-AgentFile {
             return $false
         }
     }
+    
+    # Inject Skills if Phase is present
+    if ($Phase) {
+        if (Update-SkillsSection -TargetFile $TargetFile -Phase $Phase) {
+            Write-Success "Updated skills section for phase: $Phase"
+        } else {
+            Write-Err "Failed to update skills section"
+        }
+    }
+    
     return $true
 }
 

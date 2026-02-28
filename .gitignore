@@ -53,3 +53,11 @@ htmlcov/
 
 # Github Actions
 .secrets
+
+# AI
+/specs
+/.specify
+/.github/skills/**
+/.github/agents/**
+/.github/prompts/**
+/.github/instructions/**

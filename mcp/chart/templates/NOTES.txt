@@ -1,0 +1,133 @@
+{{- include "speckit-mcp-server.validateMode" . -}}
+{{- include "speckit-mcp-server.validateRouting" . -}}
+Thank you for installing {{ .Chart.Name }}!
+
+Your release is named {{ .Release.Name }}.
+
+To learn more about the release, try:
+
+  $ helm status {{ .Release.Name }} -n {{ .Release.Namespace }}
+  $ helm get all {{ .Release.Name }} -n {{ .Release.Namespace }}
+
+========================================
+Speckit MCP Server Deployment
+========================================
+
+Deployment Mode: {{ .Values.mode }}
+
+{{- if eq .Values.mode "image" }}
+
+Container Image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+
+{{- else if eq .Values.mode "npm" }}
+
+NPM Package: {{ .Values.npm.package }}@{{ .Values.npm.version }}
+Registry: {{ .Values.npm.registry }}
+
+{{- end }}
+
+Service: {{ include "speckit-mcp-server.fullname" . }}
+Type: {{ .Values.service.type }}
+Port: {{ .Values.service.port }}
+
+========================================
+Connection Information
+========================================
+
+{{- if eq .Values.service.type "ClusterIP" }}
+
+The MCP server is accessible within the cluster at:
+
+  {{ include "speckit-mcp-server.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}
+
+To access from outside the cluster, use port-forwarding:
+
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "speckit-mcp-server.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+
+Then connect to: http://localhost:{{ .Values.service.port }}
+
+{{- else if eq .Values.service.type "NodePort" }}
+
+The MCP server is accessible via NodePort. Get the node port with:
+
+  export NODE_PORT=$(kubectl get -n {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "speckit-mcp-server.fullname" . }})
+  export NODE_IP=$(kubectl get nodes -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo "MCP Server URL: http://$NODE_IP:$NODE_PORT"
+
+{{- else if eq .Values.service.type "LoadBalancer" }}
+
+The MCP server is accessible via LoadBalancer. Get the external IP with:
+
+  export SERVICE_IP=$(kubectl get svc -n {{ .Release.Namespace }} {{ include "speckit-mcp-server.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  echo "MCP Server URL: http://$SERVICE_IP:{{ .Values.service.port }}"
+
+NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+
+{{- end }}
+
+{{- if .Values.ingress.enabled }}
+
+========================================
+Ingress Configuration
+========================================
+
+The MCP server is exposed via Ingress at:
+
+{{- range .Values.ingress.hosts }}
+  {{- range .paths }}
+  - http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}{{ .path }}
+  {{- end }}
+{{- end }}
+
+{{- end }}
+
+{{- if .Values.httpRoute.enabled }}
+
+========================================
+Gateway API HTTPRoute Configuration
+========================================
+
+The MCP server is exposed via HTTPRoute through Gateway: {{ .Values.httpRoute.gatewayName }}
+
+Hostnames:
+{{- range .Values.httpRoute.hostnames }}
+  - {{ . }}
+{{- end }}
+
+{{- end }}
+
+========================================
+Pod Status
+========================================
+
+Check the status of your MCP server pods:
+
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "speckit-mcp-server.name" . }},app.kubernetes.io/instance={{ .Release.Name }}
+
+View logs:
+
+  kubectl logs -n {{ .Release.Namespace }} -l app.kubernetes.io/name={{ include "speckit-mcp-server.name" . }} --tail=50 -f
+
+{{- if eq .Values.mode "npm" }}
+
+NOTE: The init container installs the NPM package at startup. Check init container logs if pods fail to start:
+
+  kubectl logs -n {{ .Release.Namespace }} <pod-name> -c npm-install
+
+{{- end }}
+
+========================================
+Upgrade/Rollback
+========================================
+
+To upgrade this release:
+
+  helm upgrade {{ .Release.Name }} speckit-mcp-server -n {{ .Release.Namespace }} -f your-values.yaml
+
+To rollback to a previous revision:
+
+  helm rollback {{ .Release.Name }} -n {{ .Release.Namespace }}
+
+========================================
+
+For more information, visit: https://github.com/speckit/spec-kit

@@ -3,6 +3,9 @@ description: Execute the implementation plan by processing and executing all tas
 scripts:
   sh: scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks
   ps: scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks
+agent_scripts:
+  sh: scripts/bash/update-agent-context.sh __AGENT__ implement
+  ps: scripts/powershell/update-agent-context.ps1 -AgentType __AGENT__ -Phase implement
 ---
 
 ## User Input
@@ -105,6 +108,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Task dependencies**: Sequential vs parallel execution rules
    - **Task details**: ID, description, file paths, parallel markers [P]
    - **Execution flow**: Order and dependency requirements
+   - **Convergence boundary**: Locate `<!-- CONVERGENCE_BOUNDARY -->` marker (if present)
 
 6. Execute implementation following the task plan:
    - **Skill Usage**: Look for tasks labeled `[Skill: Name]`. Prioritize reading and following the skill instructions (from `.specify/skills`, `.github/skills`, etc.) when executing these tasks.
@@ -113,15 +117,24 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Follow TDD approach**: Execute test tasks before their corresponding implementation tasks
    - **File-based coordination**: Tasks affecting the same files must run sequentially
    - **Validation checkpoints**: Verify each phase completion before proceeding
+   - **⚠️ CONVERGENCE BOUNDARY**: When reaching `<!-- CONVERGENCE_BOUNDARY -->`, **HARD STOP**. Do NOT execute any tasks below this marker. These are Phase N (Convergence) tasks reserved for `/speckit.converge`.
 
-7. Implementation execution rules:
+7. **Pre-convergence Check** (after completing all tasks above the boundary):
+   - Verify all Phase N-1 (Polish) tasks are marked as `[X]`
+   - If any Phase N-1 tasks remain incomplete, list them and prompt the user to complete them
+   - Once all pre-boundary tasks are complete, output:
+     - "✅ All implementation phases complete (Phases 1 through N-1)"
+     - "📋 Phase N (System Convergence) tasks are ready"
+     - "➡️  Run `/speckit.converge` to execute documentation convergence"
+
+8. Implementation execution rules:
    - **Setup first**: Initialize project structure, dependencies, configuration
    - **Tests before code**: If you need to write tests for contracts, entities, and integration scenarios
    - **Core development**: Implement models, services, CLI commands, endpoints
    - **Integration work**: Database connections, middleware, logging, external services
    - **Polish and validation**: Unit tests, performance optimization, documentation
 
-8. Progress tracking and error handling:
+9. Progress tracking and error handling:
    - Report progress after each completed task
    - Halt execution if any non-parallel task fails
    - For parallel tasks [P], continue with successful tasks, report failed ones
@@ -129,7 +142,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Suggest next steps if implementation cannot proceed
    - **IMPORTANT** For completed tasks, make sure to mark the task off as [X] in the tasks file.
 
-9. Completion validation:
+10. Completion validation:
    - Verify all required tasks are completed
    - Check that implemented features match the original specification
    - Validate that tests pass and coverage meets requirements

@@ -1,0 +1,25 @@
+# Test values for NPM mode deployment with authentication
+# This configuration validates npm package installation with private registry authentication
+
+mode: npm
+
+npm:
+  package: "@speckit/mcp-server"
+  version: "latest"
+  registry: "https://registry.npmjs.org"
+  authSecret: npm-auth-secret
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+replicas: 1
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

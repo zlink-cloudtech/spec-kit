@@ -96,6 +96,40 @@ Add to your `claude_desktop_config.json`:
 }
 ```
 
+## Helm Chart (Kubernetes Deployment)
+
+Deploy the MCP server to Kubernetes using the included Helm chart with two deployment modes:
+
+- **Image mode** (default): Deploy from a pre-built container image
+- **NPM mode**: Install the NPM package at runtime via an init container
+
+### Quick Install
+
+```bash
+# From GHCR (OCI registry)
+helm install my-mcp oci://ghcr.io/zlink-cloudtech/speckit-mcp-server --version <version>
+
+# From local source
+helm install my-mcp ./chart
+```
+
+### NPM Mode
+
+```bash
+helm install my-mcp ./chart \
+  --set mode=npm \
+  --set npm.version=0.1.1
+```
+
+### Verify Deployment
+
+```bash
+kubectl get pods -l app.kubernetes.io/name=speckit-mcp-server
+kubectl port-forward svc/my-mcp-speckit-mcp-server 8080:8080
+```
+
+For full configuration options, networking (Ingress / Gateway API HTTPRoute), and troubleshooting, see the [chart documentation](./chart/README.md).
+
 ## Testing
 
 ```bash

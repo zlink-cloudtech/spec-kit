@@ -9,6 +9,8 @@
       href: installation.md
     - name: Quick Start
       href: quickstart.md
+    - name: Helm Deployment (MCP)
+      href: helm-deployment.md
     - name: Upgrade
       href: upgrade.md
 
@@ -17,3 +19,11 @@
   items:
     - name: Local Development
       href: local-development.md
+    - name: Skills Integration
+      href: skills-integration.md
+
+# Decisions
+- name: Decisions
+  items:
+    - name: Architecture Decision Records
+      href: adr/README.md

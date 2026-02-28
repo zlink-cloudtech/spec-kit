@@ -1,0 +1,45 @@
+{
+  "_comment": "Example requirements JSON for init_spec.py. Use this as a template when collecting user requirements.",
+  "_usage": "python3 scripts/init_spec.py --from-json /tmp/requirements.json --auto-dir",
+  "_note": "Using --auto-dir creates isolated directory (specs/001-feature-name/) with automatic numbering for concurrent feature development.",
+  "feature_name": "OAuth2 Integration",
+  "overview": "Add OAuth2 authentication support for third-party login providers",
+  "user_requirements": "Users should be able to login using Google, GitHub, or Microsoft accounts instead of traditional username/password authentication",
+  "business_value": [
+    "Reduce friction in user onboarding process",
+    "Eliminate password management overhead for users",
+    "Improve security with industry-standard OAuth2 flows",
+    "Enable enterprise SSO integration"
+  ],
+  "target_users": [
+    "End users who prefer social login",
+    "Enterprise users with existing OAuth2 providers",
+    "Developers integrating with our API"
+  ],
+  "constraints": [
+    "Must support PKCE flow for enhanced security",
+    "Must work with existing session management system",
+    "Must not break current local authentication",
+    "Must comply with OAuth2.1 specification"
+  ],
+  "acceptance_criteria": [
+    "Users can login with Google OAuth2",
+    "Users can login with GitHub OAuth2",
+    "Users can login with Microsoft OAuth2",
+    "Existing local auth continues to work",
+    "Session management is properly maintained",
+    "Error messages are user-friendly",
+    "All OAuth2 flows pass security audit"
+  ],
+  "out_of_scope": [
+    "SAML support",
+    "Custom OAuth2 provider configuration UI",
+    "Account linking between multiple providers",
+    "OAuth1.0 support"
+  ],
+  "questions": [
+    "Should we support token refresh in the background?",
+    "What should happen if OAuth2 provider is down?",
+    "Do we need admin interface for provider configuration?"
+  ]
+}

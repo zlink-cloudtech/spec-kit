@@ -40,6 +40,13 @@ if [ ! -f "$CHART_PATH" ]; then
     exit 1
 fi
 
+# --- Dry-run: skip push ---
+if [ "${DRY_RUN}" == "true" ]; then
+    echo "ℹ️  DRY_RUN=true — skipping push"
+    echo "✅ Done (dry run). Package at: ${CHART_PATH}"
+    exit 0
+fi
+
 echo "🚀 Publishing Helm chart version ${VERSION} to ${REGISTRY}..."
 
 # Check if helm is installed

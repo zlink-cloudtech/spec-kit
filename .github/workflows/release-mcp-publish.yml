@@ -1,0 +1,210 @@
+name: Release MCP
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'mcp/**'
+      - '!mcp/README.md'
+      - '!mcp/README-CN.md'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'mcp/**'
+      - '!mcp/README.md'
+      - '!mcp/README-CN.md'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 0.2.0). Leave empty to auto-calculate from tags.'
+        required: false
+      dry_run:
+        description: 'Dry run — package only, skip push'
+        type: boolean
+        default: false
+
+concurrency:
+  group: release-mcp-publish
+  cancel-in-progress: false
+
+jobs:
+  # ── Lint the chart before anything else ─────────────────────────────────
+  lint:
+    name: Lint Helm Chart
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.12.0
+
+      - name: Helm lint
+        run: helm lint mcp/chart
+
+  # ── Build, publish, and release ─────────────────────────────────────────
+  publish:
+    name: Publish MCP Chart
+    needs: lint
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get Next Version Info
+        id: next_version
+        run: |
+          chmod +x .github/workflows/scripts/get-next-mcp-version.sh
+          .github/workflows/scripts/get-next-mcp-version.sh
+
+      - name: Determine Target Version
+        id: version
+        run: |
+          MANUAL_VERSION="${{ github.event.inputs.version }}"
+          CALC_VERSION="${{ steps.next_version.outputs.new_version }}"
+
+          if [ -n "$MANUAL_VERSION" ]; then
+            VERSION="$MANUAL_VERSION"
+          else
+            VERSION="$CALC_VERSION"
+          fi
+
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "📌 Using version: $VERSION"
+
+      - name: Check if release already exists
+        id: check_release
+        run: |
+          chmod +x .github/workflows/scripts/check-release-exists.sh
+          .github/workflows/scripts/check-release-exists.sh mcp-v${{ steps.version.outputs.VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Helm
+        if: steps.check_release.outputs.exists == 'false'
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.12.0
+
+      - name: Log in to GHCR
+        if: steps.check_release.outputs.exists == 'false'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Downcase repository owner
+        if: steps.check_release.outputs.exists == 'false'
+        id: owner
+        run: echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Package and publish chart
+        if: steps.check_release.outputs.exists == 'false'
+        run: |
+          chmod +x mcp/scripts/publish-chart.sh
+          mcp/scripts/publish-chart.sh "${{ steps.version.outputs.VERSION }}"
+        env:
+          GITHUB_REPOSITORY_OWNER: ${{ steps.owner.outputs.owner }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+
+      - name: Verify published chart (dry-run install)
+        if: steps.check_release.outputs.exists == 'false' && github.event.inputs.dry_run != 'true'
+        run: |
+          OWNER="${{ steps.owner.outputs.owner }}"
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          CHART="oci://ghcr.io/${OWNER}/charts/speckit-mcp-server"
+
+          echo "🔍 Verifying chart installability..."
+          helm install mcp-verify "${CHART}" \
+            --version "${VERSION}" \
+            --dry-run --debug \
+            --set mode=image 2>&1 | head -80
+
+          echo "✅ Chart v${VERSION} verified successfully"
+
+      # ── Create GitHub Release ───────────────────────────────────────────
+      - name: Create Release
+        if: steps.check_release.outputs.exists == 'false' && github.event.inputs.dry_run != 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mcp-v${{ steps.version.outputs.VERSION }}
+          name: MCP Server ${{ steps.version.outputs.VERSION }}
+          body: |
+            ## MCP Helm Chart v${{ steps.version.outputs.VERSION }}
+
+            ### Install
+
+            ```bash
+            helm install my-mcp oci://ghcr.io/${{ steps.owner.outputs.owner }}/charts/speckit-mcp-server \
+              --version ${{ steps.version.outputs.VERSION }}
+            ```
+
+            ### Deployment Modes
+
+            **Image mode** (default):
+            ```bash
+            helm install my-mcp oci://ghcr.io/${{ steps.owner.outputs.owner }}/charts/speckit-mcp-server \
+              --version ${{ steps.version.outputs.VERSION }} \
+              --set mode=image \
+              --set image.repository=ghcr.io/${{ steps.owner.outputs.owner }}/speckit-mcp-server \
+              --set image.tag=${{ steps.version.outputs.VERSION }}
+            ```
+
+            **NPM mode**:
+            ```bash
+            helm install my-mcp oci://ghcr.io/${{ steps.owner.outputs.owner }}/charts/speckit-mcp-server \
+              --version ${{ steps.version.outputs.VERSION }} \
+              --set mode=npm
+            ```
+          draft: false
+          prerelease: false
+          # Monorepo component release: Do not mark as repo-wide "latest"
+          make_latest: false
+          files: |
+            mcp/dist/*.tgz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit version bump
+        if: steps.check_release.outputs.exists == 'false' && github.event.inputs.dry_run != 'true'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+          VERSION="${{ steps.version.outputs.VERSION }}"
+
+          # Update Chart.yaml
+          sed -i "s/^version: .*/version: ${VERSION}/" mcp/chart/Chart.yaml
+          sed -i "s/^appVersion: .*/appVersion: ${VERSION}/" mcp/chart/Chart.yaml
+
+          # Update package.json
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('mcp/package.json', 'utf8'));
+            pkg.version = '${VERSION}';
+            fs.writeFileSync('mcp/package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+
+          # Commit all version files together
+          git add mcp/chart/Chart.yaml mcp/package.json
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+
+          git commit -m "chore(mcp): bump version to ${VERSION} [skip ci]"
+
+          if [ "${ACT}" == "true" ]; then
+            echo "Running in act, skipping git push"
+          else
+            git push origin HEAD:${{ github.ref_name }}
+          fi

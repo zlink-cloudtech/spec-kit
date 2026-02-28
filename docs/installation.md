@@ -72,6 +72,24 @@ After initialization, you should see the following commands available in your AI
 
 The `.specify/scripts` directory will contain both `.sh` and `.ps1` scripts.
 
+## Helm Chart Installation (MCP Server)
+
+If you want to deploy the Speckit MCP Server to a Kubernetes cluster, you can install it via Helm:
+
+```bash
+# Install from GHCR (OCI registry)
+helm install my-mcp oci://ghcr.io/zlink-cloudtech/speckit-mcp-server --version <version>
+```
+
+The chart supports two deployment modes:
+
+- **Image mode** (default): Deploy from a pre-built container image
+- **NPM mode**: Install the NPM package at runtime via an init container
+
+**Prerequisites**: Kubernetes 1.24+, Helm 3.8+
+
+For full configuration options and examples, see the [Helm Deployment Guide](helm-deployment.md) and the [Chart README](../mcp/chart/README.md).
+
 ## Troubleshooting
 
 ### Git Credential Manager on Linux

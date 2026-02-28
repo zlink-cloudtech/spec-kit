@@ -1,0 +1,12 @@
+name: speckit-librarian
+hooks:
+  - phase: converge
+    priority: 100
+    context: SKILL.md
+    instructions: |
+      ## SpecKit Integration
+      - Read `memory/system-map.md` and update all modified artifact entries
+      - Read "Documentation State Matrix" from `plan.md` and execute each action
+      - Create/update ADRs in `docs/adr/` directory using Michael Nygard format
+      - Update `memory/system-map.md` status fields, timestamps, and new artifact entries
+      - Close all Gap Analysis items from plan.md

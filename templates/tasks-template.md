@@ -8,13 +8,15 @@ description: "Task list template for feature implementation"
 **Input**: Design documents from `/specs/[###-feature-name]/`
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: The examples below include test tasks. Tests are REQUIRED for all new features and bug fixes, in accordance with the Constitution.
+**Tests**: The examples below include test tasks. Tests are REQUIRED for all new features and bug fixes, in accordance with Article IV (Test-First Imperative) of the Constitution. All tasks MUST follow the Red-Green-Refactor cycle.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
-## Format: `[ID] [P?] [Story] Description`
+## Format: `[ID] [P?] [Skill?] [Story?] Description`
 
+- **[ID]**: Sequential task identifier (T001, T002, T003...)
 - **[P]**: Can run in parallel (different files, no dependencies)
+- **[Skill: name]**: Indicates use of a specialized skill (e.g., `[Skill: speckit-developer]`)
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
 - Include exact file paths in descriptions
 
@@ -85,7 +87,7 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 1 (REQUIRED per Article IV) ✅
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
@@ -111,7 +113,7 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 2 (REQUIRED per Article IV) ✅
 
 - [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
 - [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
@@ -133,7 +135,7 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 3 (REQUIRED per Article IV) ✅
 
 - [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
 - [ ] T025 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
@@ -152,16 +154,21 @@ Examples of foundational tasks (adjust based on your project):
 
 ---
 
-## Phase N: Polish & Cross-Cutting Concerns
+## Phase N-1: Polish & Cross-Cutting Concerns
 
-**Purpose**: Improvements that affect multiple user stories
+**Purpose**: Improvements that affect multiple user stories  
+**Scope**: Executed by `implement` command — this is the last phase before convergence
 
 - [ ] TXXX [P] Documentation updates in docs/
 - [ ] TXXX Code cleanup and refactoring
 - [ ] TXXX Performance optimization across all stories
-- [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
+- [ ] TXXX [P] Additional unit tests in tests/unit/
 - [ ] TXXX Security hardening
 - [ ] TXXX Run quickstart.md validation
+
+<!-- CONVERGENCE_BOUNDARY -->
+<!-- Everything above this line is executed by /speckit.implement -->
+<!-- Everything below this line is executed by /speckit.converge -->
 
 ---
 
@@ -174,7 +181,8 @@ Examples of foundational tasks (adjust based on your project):
 - **User Stories (Phase 3+)**: All depend on Foundational phase completion
   - User stories can then proceed in parallel (if staffed)
   - Or sequentially in priority order (P1 → P2 → P3)
-- **Polish (Final Phase)**: Depends on all desired user stories being complete
+- **Polish (Phase N-1)**: Depends on all desired user stories being complete
+- **Convergence (Phase N)**: Depends on Polish completion — executed by `/speckit.converge`
 
 ### User Story Dependencies
 
@@ -184,7 +192,7 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Within Each User Story
 
-- Tests (if included) MUST be written and FAIL before implementation
+- Tests MUST be written and FAIL before implementation (Article IV)
 - Models before services
 - Services before endpoints
 - Core implementation before integration
@@ -204,7 +212,7 @@ Examples of foundational tasks (adjust based on your project):
 ## Parallel Example: User Story 1
 
 ```bash
-# Launch all tests for User Story 1 together (if tests requested):
+# Launch all tests for User Story 1 together:
 Task: "Contract test for [endpoint] in tests/contract/test_[name].py"
 Task: "Integration test for [user journey] in tests/integration/test_[name].py"
 
@@ -246,12 +254,88 @@ With multiple developers:
 
 ---
 
+## Phase N: System Convergence
+
+**Purpose**: Close the documentation feedback loop and maintain system integrity  
+**Scope**: Executed by `/speckit.converge` — NOT by `/speckit.implement`
+
+**⚠️ REQUIRED**: This phase ensures feature artifacts are merged back into system documentation
+
+### Documentation Updates
+
+<!--
+  STRATEGY: Based on "Documentation State Matrix" from plan.md
+-->
+
+**ADR (Architecture Decision Records)**:
+- [ ] TN01 [Skill: speckit-librarian] Create ADR for [significant decision] in docs/adr/[####-title].md
+- [ ] TN02 [Skill: speckit-librarian] Update ADR index with new decisions
+
+**System Documentation**:
+- [ ] TN03 [Skill: speckit-librarian] Update Architecture Diagram to reflect [new component]
+- [ ] TN04 [Skill: speckit-librarian] Update API Documentation with [new endpoints]
+- [ ] TN05 [P] [Skill: speckit-librarian] Update Configuration Guide with [new settings]
+
+**System Map Synchronization**:
+- [ ] TN06 [Skill: speckit-librarian] Update memory/system-map.md:
+  - Change artifact status from "⚠️ Missing" to "✅ Active"
+  - Add locations for newly created documents
+  - Record "Last Updated" timestamps
+  - Add descriptions of new artifacts
+
+### Bootstrapping (Gap Closure)
+
+<!--
+  STRATEGY: Based on "Gap Analysis" from plan.md
+-->
+
+**Missing Essential Artifacts** (if flagged in plan.md):
+- [ ] TN07 Create [missing artifact] in [location] (Ref: plan.md Gap Analysis)
+- [ ] TN08 Notify [team] of new artifact availability
+
+### Validation
+
+**TDD Compliance Verification**:
+- [ ] TN09 Verify all implementation tasks have corresponding test tasks
+- [ ] TN10 Confirm test coverage meets project standards (per constitution)
+
+**Documentation Completeness**:
+- [ ] TN11 Verify all changes from "Documentation State Matrix" are complete
+- [ ] TN12 Ensure System Map accurately reflects current system state
+
+---
+
+## Test-Driven Development (TDD) Rules
+
+**MANDATORY**: All implementation tasks MUST follow Red-Green-Refactor cycle:
+
+### 🔴 RED Phase
+1. Write a test that captures the requirement
+2. Run the test and confirm it **FAILS**
+3. Output: "Test created at `tests/...` and confirmed failing"
+
+### 🟢 GREEN Phase
+1. Write **minimum code** to make the test pass
+2. Run the test and confirm it **PASSES**
+3. No over-engineering at this stage
+
+### 🔵 REFACTOR Phase
+1. Clean up the code while keeping tests green
+2. Improve naming, remove duplication
+3. Ensure tests still pass after cleanup
+
+**Task Pairing**: Every implementation task should be preceded by its test task:
+- Example: T015 (Test User model) → T016 (Implement User model)
+
+---
+
 ## Notes
 
 - [P] tasks = different files, no dependencies
+- [Skill: name] = uses specialized skill from skills/ directory
 - [Story] label maps task to specific user story for traceability
 - Each user story should be independently completable and testable
-- Verify tests fail before implementing
+- **TDD REQUIRED**: Verify tests fail (RED) before implementing (GREEN), then refactor (REFACTOR)
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence

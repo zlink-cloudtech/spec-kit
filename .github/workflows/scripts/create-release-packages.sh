@@ -172,6 +172,9 @@ build_variant() {
         cp -r skills/* "$base_dir/.specify/skills/"
         echo "Copied skills -> .specify/skills" ;;
     esac
+    # Clean up Python bytecode artifacts from skills
+    find "$base_dir" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null
+    find "$base_dir" -name "*.pyc" -delete 2>/dev/null
   fi
 
   # NOTE: We substitute {ARGS} internally. Outward tokens differ intentionally:

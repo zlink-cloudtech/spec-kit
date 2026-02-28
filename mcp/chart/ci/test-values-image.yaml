@@ -1,0 +1,37 @@
+# Test values for image mode deployment
+# Used for helm template validation and testing
+
+mode: image
+
+image:
+  repository: ghcr.io/speckit/mcp-server
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+  # pullSecrets: []
+
+replicas: 2
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+ingress:
+  enabled: false
+
+httpRoute:
+  enabled: false
