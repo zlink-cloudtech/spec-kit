@@ -554,6 +554,38 @@ update_existing_agent_file() {
     return 0
 }
 
+ensure_copilot_frontmatter() {
+    local target_file="$1"
+    local project_name="$2"
+
+    # Check if frontmatter already exists (file starts with ---)
+    if head -1 "$target_file" 2>/dev/null | grep -q "^---$"; then
+        return 0
+    fi
+
+    # Prepend the required GitHub Copilot instructions frontmatter
+    local temp_file
+    temp_file=$(mktemp) || { log_error "Failed to create temporary file for frontmatter"; return 1; }
+
+    cat > "$temp_file" <<EOF
+---
+applyTo: '**'
+description: This file specifies the development guidelines for the ${project_name} project, including active technologies, project structure, commands, code style, and recent changes.
+---
+
+EOF
+    cat "$target_file" >> "$temp_file"
+
+    if ! mv "$temp_file" "$target_file"; then
+        log_error "Failed to prepend frontmatter to $target_file"
+        rm -f "$temp_file"
+        return 1
+    fi
+
+    log_info "Added required frontmatter to Copilot instructions file"
+    return 0
+}
+
 #==============================================================================
 # Main Agent File Update Function
 #==============================================================================
@@ -623,6 +655,11 @@ update_agent_file() {
             log_error "Failed to update existing agent file"
             return 1
         fi
+    fi
+
+    # For GitHub Copilot, ensure the instructions file has the required frontmatter
+    if [[ "$agent_name" == "GitHub Copilot" ]]; then
+        ensure_copilot_frontmatter "$target_file" "$project_name"
     fi
 
     return 0

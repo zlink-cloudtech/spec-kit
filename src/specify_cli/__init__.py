@@ -1061,7 +1061,7 @@ def ensure_system_map_from_template(project_path: Path, tracker: StepTracker | N
             tracker.add("system-map", "System Map setup")
             tracker.error("system-map", str(e))
         else:
-            console.print(f"[yellow]Warning: Could not initialize system-map: {e}[/yellow]")
+            pass
 
 def ensure_speckit_config_from_template(project_path: Path, tracker: StepTracker | None = None) -> None:
     """Copy speckit config template to project root as .speckit.yaml if it doesn't exist (preserves existing config on reinitialization)."""
@@ -1092,7 +1092,7 @@ def ensure_speckit_config_from_template(project_path: Path, tracker: StepTracker
             tracker.add("speckit-config", "SpecKit config setup")
             tracker.error("speckit-config", str(e))
         else:
-            console.print(f"[yellow]Warning: Could not initialize .speckit.yaml: {e}[/yellow]")
+            pass
 
 
 @app.command()

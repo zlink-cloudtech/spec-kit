@@ -46,7 +46,7 @@ $NEW_PLAN = $IMPL_PLAN
 # Agent file paths
 $CLAUDE_FILE   = Join-Path $REPO_ROOT 'CLAUDE.md'
 $GEMINI_FILE   = Join-Path $REPO_ROOT 'GEMINI.md'
-$COPILOT_FILE  = Join-Path $REPO_ROOT '.github/agents/copilot-instructions.md'
+$COPILOT_FILE  = Join-Path $REPO_ROOT '.github/instructions/specify-rules.instructions.md'
 $CURSOR_FILE   = Join-Path $REPO_ROOT '.cursor/rules/specify-rules.mdc'
 $QWEN_FILE     = Join-Path $REPO_ROOT 'QWEN.md'
 $AGENTS_FILE   = Join-Path $REPO_ROOT 'AGENTS.md'
@@ -373,6 +373,28 @@ function Update-ExistingAgentFile {
 }
 
 
+function Ensure-CopilotFrontmatter {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$TargetFile,
+        [Parameter(Mandatory=$true)]
+        [string]$ProjectName
+    )
+    $firstLine = (Get-Content -LiteralPath $TargetFile -TotalCount 1 -Encoding utf8)
+    if ($firstLine -eq '---') { return }
+
+    $frontmatter = @"
+---
+applyTo: '**'
+description: This file specifies the development guidelines for the ${ProjectName} project, including active technologies, project structure, commands, code style, and recent changes.
+---
+
+"@
+    $existing = Get-Content -LiteralPath $TargetFile -Raw -Encoding utf8
+    Set-Content -LiteralPath $TargetFile -Value ($frontmatter + $existing) -NoNewline -Encoding utf8
+    Write-Info 'Added required frontmatter to Copilot instructions file'
+}
+
 function Update-AgentFile {
     param(
         [Parameter(Mandatory=$true)]
@@ -398,7 +420,12 @@ function Update-AgentFile {
             return $false
         }
     }
-    
+
+    # For GitHub Copilot, ensure the instructions file has the required frontmatter
+    if ($AgentName -eq 'GitHub Copilot') {
+        Ensure-CopilotFrontmatter -TargetFile $TargetFile -ProjectName $projectName
+    }
+
     return $true
 }
 
