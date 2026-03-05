@@ -12,12 +12,12 @@ description: "Task list template for feature implementation"
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
-## Format: `[ID] [P?] [Skill?] [Story?] Description`
+## Format: `[ID] [P?] [Story?] [Skill?] Description`
 
-- **[ID]**: Sequential task identifier (T001, T002, T003...)
+- **[ID]**: Sequential task identifier (T001, T002, T003...); Phase N convergence tasks use `TN01, TN02...` prefix to visually distinguish them from implementation tasks
 - **[P]**: Can run in parallel (different files, no dependencies)
-- **[Skill: name]**: Indicates use of a specialized skill (e.g., `[Skill: speckit-developer]`)
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3)
+- **[Skill: name]**: Indicates use of a specialized skill (e.g., `[Skill: speckit-developer]`); defaults to `[Skill: speckit-developer]` for implementation/test tasks when no domain skill is matched; **one skill per task** — if a task seems to require multiple skills, split it into smaller tasks
 - Include exact file paths in descriptions
 
 ## Path Conventions

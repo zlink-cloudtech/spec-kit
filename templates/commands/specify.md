@@ -150,14 +150,20 @@ Given that feature description, do this:
     7. Identify Key Entities (if data involved)
     8. Return: SUCCESS (spec ready for planning)
 
-5. **Analyze Available Skills**:
-   - Check the skills directory for your active agent (check the skills directory for your active agent, e.g., .specify/skills, .github/skills, etc.).
-   - Identify any skills that are relevant to the feature requirements.
-   - **RULE**: Skills have highest priority. If a skill exists, you MUST plan to use it.
-   - **Constraint Injection**:
-     - READ the skill full content of SKILL.md. Look for sections like "Constraints", "Requirements", "Workflow", "Standard" or "Testing & Verification".
-     - IF found, INJECT these requirements into the `spec.md` under `Requirements` or `Success Criteria`.
-     - Example: If skill says "Must run pipeline tests", add "SC-XXX: Passes `gh act` pipeline tests" to Spec.
+5. **Analyze Available Domain Skills**:
+
+   Run the following command to get the list of domain skills available in this project:
+   ```bash
+   python3 scripts/resolve-skills.py --list-domain
+   ```
+
+   This returns only **domain skills** (skills without a `speckit-adapter.yaml`). These are user-defined, project-specific skills that must be actively discovered and used.
+
+   - **DO NOT** include adapter-based skills (`speckit-architect`, `speckit-developer`, `speckit-tech-lead`, `speckit-librarian`, etc.) in the Available Skills Analysis — they are automatically injected at their respective phases and require no mention in the spec.
+   - From the domain skills list, identify any that are **directly relevant** to this feature's requirements.
+   - If **none** are relevant, write `None applicable` in the Available Skills Analysis section.
+   - If a relevant skill is found, **READ its full `SKILL.md`** content. Look for "Constraints", "Requirements", "Workflow", or "Testing & Verification" sections and INJECT those requirements into `spec.md` under `Requirements` or `Success Criteria`.
+   - **Constraint Injection example**: If skill says "Must run pipeline tests", add `SC-XXX: Passes pipeline tests` to Spec.
 
 6. Write the specification to SPEC_FILE using the template structure:
    - Follow `templates/spec-template.md` perfectly.

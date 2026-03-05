@@ -4,7 +4,6 @@ hooks:
     priority: 100
     context: SKILL.md
     instructions: |
-      ## SpecKit Integration
       - Follow Constitution Article IV: Test-First Imperative (Red-Green-Refactor)
       - Stop at `<!-- CONVERGENCE_BOUNDARY -->` marker — do not execute Phase N tasks
       - After Phase N-1 completion, prompt user to run `/speckit.converge`
@@ -12,6 +11,5 @@ hooks:
     priority: 90
     context: SKILL.md
     instructions: |
-      ## SpecKit Integration
       - Ensure every implementation task has a preceding test task (TDD pairing)
       - Use `[Skill: speckit-developer]` label for implementation tasks

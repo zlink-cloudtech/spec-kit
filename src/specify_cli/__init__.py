@@ -1030,6 +1030,71 @@ def ensure_constitution_from_template(project_path: Path, tracker: StepTracker |
         else:
             console.print(f"[yellow]Warning: Could not initialize constitution: {e}[/yellow]")
 
+
+def ensure_system_map_from_template(project_path: Path, tracker: StepTracker | None = None) -> None:
+    """Copy system-map template to memory if it doesn't exist (preserves existing system-map on reinitialization)."""
+    memory_system_map = project_path / ".specify" / "memory" / "system-map.md"
+    template_system_map = project_path / ".specify" / "templates" / "system-map-template.md"
+
+    if memory_system_map.exists():
+        if tracker:
+            tracker.add("system-map", "System Map setup")
+            tracker.skip("system-map", "existing file preserved")
+        return
+
+    if not template_system_map.exists():
+        if tracker:
+            tracker.add("system-map", "System Map setup")
+            tracker.error("system-map", "template not found")
+        return
+
+    try:
+        memory_system_map.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(template_system_map, memory_system_map)
+        if tracker:
+            tracker.add("system-map", "System Map setup")
+            tracker.complete("system-map", "copied from template")
+        else:
+            console.print(f"[cyan]Initialized system-map from template[/cyan]")
+    except Exception as e:
+        if tracker:
+            tracker.add("system-map", "System Map setup")
+            tracker.error("system-map", str(e))
+        else:
+            console.print(f"[yellow]Warning: Could not initialize system-map: {e}[/yellow]")
+
+def ensure_speckit_config_from_template(project_path: Path, tracker: StepTracker | None = None) -> None:
+    """Copy speckit config template to project root as .speckit.yaml if it doesn't exist (preserves existing config on reinitialization)."""
+    speckit_config = project_path / ".speckit.yaml"
+    template_config = project_path / ".specify" / "templates" / "speckit-config-template.yaml"
+
+    if speckit_config.exists():
+        if tracker:
+            tracker.add("speckit-config", "SpecKit config setup")
+            tracker.skip("speckit-config", "existing file preserved")
+        return
+
+    if not template_config.exists():
+        if tracker:
+            tracker.add("speckit-config", "SpecKit config setup")
+            tracker.error("speckit-config", "template not found")
+        return
+
+    try:
+        shutil.copy2(template_config, speckit_config)
+        if tracker:
+            tracker.add("speckit-config", "SpecKit config setup")
+            tracker.complete("speckit-config", "created")
+        else:
+            console.print("[cyan]Initialized .speckit.yaml from template[/cyan]")
+    except Exception as e:
+        if tracker:
+            tracker.add("speckit-config", "SpecKit config setup")
+            tracker.error("speckit-config", str(e))
+        else:
+            console.print(f"[yellow]Warning: Could not initialize .speckit.yaml: {e}[/yellow]")
+
+
 @app.command()
 def init(
     project_name: str = typer.Argument(None, help="Name for your new project directory (optional if using --here, or use '.' for current directory)"),
@@ -1205,6 +1270,8 @@ def init(
         ("extracted-summary", "Extraction summary"),
         ("chmod", "Ensure scripts executable"),
         ("constitution", "Constitution setup"),
+        ("system-map", "System Map setup"),
+        ("speckit-config", "SpecKit config setup"),
         ("cleanup", "Cleanup"),
         ("git", "Initialize git repository"),
         ("final", "Finalize")
@@ -1226,6 +1293,10 @@ def init(
             ensure_executable_scripts(project_path, tracker=tracker)
 
             ensure_constitution_from_template(project_path, tracker=tracker)
+
+            ensure_system_map_from_template(project_path, tracker=tracker)
+
+            ensure_speckit_config_from_template(project_path, tracker=tracker)
 
             if not no_git:
                 tracker.start("git")

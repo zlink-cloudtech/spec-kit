@@ -65,7 +65,7 @@ has_git() {
 # Strip branch type prefix (e.g., feat/001-user-auth → 001-user-auth)
 strip_branch_type() {
     local branch="$1"
-    echo "$branch" | sed 's|^\(feat\|bug\|hotfix\|refactor\|docs\|chore\)/||'
+    echo "$branch" | sed -E 's/^(feat|bug|hotfix|refactor|docs|chore)\///'
 }
 
 check_feature_branch() {

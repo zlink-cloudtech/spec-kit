@@ -4,7 +4,6 @@ hooks:
     priority: 100
     context: SKILL.md
     instructions: |
-      ## SpecKit Integration
       - Read `memory/system-map.md` to identify touched components and their documentation status
       - Read `memory/constitution.md` for governance principles and development lifecycle
       - Add entries to plan.md "Documentation State Matrix" for impacted documents

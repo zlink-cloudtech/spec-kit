@@ -1,44 +1,88 @@
 # System Map
 
-**Purpose**: This document serves as a **centralized index** of all authoritative documentation for the project. It enables AI agents to quickly locate relevant context without scanning the entire codebase.
+**Purpose**: Centralized index of all authoritative documentation for the project. Enables AI agents to quickly locate relevant context without scanning the entire codebase.
 
-**Last Updated**: [DATE]
+**Template Version**: 2.0.0
+**Version**: [SYSTEM_MAP_VERSION] | **Created**: [CREATION_DATE] | **Last Updated**: [DATE]
+**Maintained By**: [Team/Owner]
+**Review Frequency**: After each major feature completion
+
+---
+
+## Project Identity
+
+**Project**: [PROJECT_NAME]
+**Description**: [PROJECT_DESCRIPTION]
+
+### Core Principles
+
+<!-- Populated from constitution. List key principles as numbered items. -->
+
+### Technology Stack
+
+<!-- List the primary languages, frameworks, and tools used in this project. -->
+
+| Category | Technology | Purpose |
+|----------|-----------|---------|
+
+### Project Components
+
+<!-- List the major components/modules of this project. -->
+
+| Component | Location | Technology | Purpose |
+|-----------|----------|------------|---------|
 
 ---
 
 ## Essential Artifacts
 
+<!--
+Status values: ✅ Active | ⚠️ Missing | 🗑️ Deprecated
+Fill tables based on your project type. Not all categories apply to every project.
+
+Common artifacts by project type:
+- Web Backend: System Architecture, Database Schema, API Design, Deployment Config
+- CLI Tool: Command Structure, Plugin Architecture, Distribution Config
+- Frontend App: Component Hierarchy, State Management, Routing Map
+- Library/SDK: Public API Reference, Compatibility Matrix, Usage Examples
+- Microservices: Service Topology, Contract Catalog, Inter-service Auth
+- Data Pipeline: Data Flow Diagram, Schema Registry, Processing SLAs
+
+Add rows that are relevant; remove or leave empty categories that don't apply.
+-->
+
 ### 🏛️ Architecture & Design
 
 | Artifact | Location | Status | Last Updated | Description |
 |----------|----------|--------|--------------|-------------|
-| System Architecture | [NEEDS CREATION] | ⚠️ Missing | N/A | High-level system components, layers, and boundaries |
-| Database Schema | [NEEDS CREATION] | ⚠️ Missing | N/A | Entity-relationship diagrams, tables, and constraints |
-| API Design | [NEEDS CREATION] | ⚠️ Missing | N/A | REST/GraphQL endpoints, contracts, and authentication |
-| Component Diagram | [NEEDS CREATION] | ⚠️ Missing | N/A | Service interactions, dependencies, and data flow |
 
 ### 📐 Configuration & Infrastructure
 
 | Artifact | Location | Status | Last Updated | Description |
 |----------|----------|--------|--------------|-------------|
-| Deployment Config | [NEEDS CREATION] | ⚠️ Missing | N/A | Environment setup, CI/CD pipelines, and infrastructure |
-| Security Policies | [NEEDS CREATION] | ⚠️ Missing | N/A | Authentication, authorization, secrets management |
-| Monitoring & Logging | [NEEDS CREATION] | ⚠️ Missing | N/A | Observability stack, metrics, alerts, and dashboards |
 
 ### 🧪 Quality & Testing
 
 | Artifact | Location | Status | Last Updated | Description |
 |----------|----------|--------|--------------|-------------|
-| Test Strategy | [NEEDS CREATION] | ⚠️ Missing | N/A | Unit, integration, e2e test approaches and coverage goals |
-| Performance Benchmarks | [NEEDS CREATION] | ⚠️ Missing | N/A | Load testing results, SLOs, and optimization targets |
+
+### 🧭 Project Memory
+
+<!--
+  These entries anchor the Gap Analysis in /speckit.plan.
+  Always keep status up to date so agents do not incorrectly create bootstrap tasks
+  for files that already exist on disk.
+-->
+
+| Artifact | Location | Status | Last Updated | Description |
+|----------|----------|--------|--------------|-------------|
+| System Map | `.specify/memory/system-map.md` | ✅ Active | [DATE] | Living index of all project components and documentation |
+| Project Constitution | `.specify/memory/constitution.md` | ✅ Active | [DATE] | Governing principles and architectural constraints |
 
 ### 📚 Decisions & Standards
 
 | Artifact | Location | Status | Last Updated | Description |
 |----------|----------|--------|--------------|-------------|
-| ADR Index | `docs/adr/` | ✅ Active | [DATE] | Architectural Decision Records directory |
-| Code Style Guide | [NEEDS CREATION] | ⚠️ Missing | N/A | Language-specific conventions and linting rules |
-| Development Guidelines | [NEEDS CREATION] | ⚠️ Missing | N/A | Git workflow, PR process, and review standards |
 
 ---
 
@@ -46,35 +90,35 @@
 
 ### External Services
 
-| Service | Type | Documentation | Owner | Purpose |
-|---------|------|--------------|-------|---------|
-| [Example: Auth0] | Identity Provider | `docs/integrations/auth0.md` | Security Team | User authentication |
-| [Example: Stripe] | Payment Gateway | `docs/integrations/stripe.md` | Backend Team | Payment processing |
+<!-- List third-party services, APIs, or platforms the project depends on. Leave empty if none. -->
+
+| Service | Type | Documentation | Purpose |
+|---------|------|---------------|---------|
 
 ### Internal Dependencies
 
-| Module | Location | Interface | Maintainer | Description |
-|--------|----------|-----------|------------|-------------|
-| [Example: UserService] | `src/services/user` | `IUserService` | Backend Team | User management logic |
+<!-- List internal modules or services that this project depends on or exposes. Leave empty if not applicable. -->
+
+| Module | Location | Interface | Description |
+|--------|----------|-----------|-------------|
 
 ---
 
 ## Knowledge Sources
 
-### Team Wisdom
+### Documentation
+
+<!-- List user-facing and developer-facing documentation. -->
 
 | Topic | Location | Type | Description |
 |-------|----------|------|-------------|
-| Onboarding Guide | [NEEDS CREATION] | Wiki/Doc | New developer setup and project overview |
-| Troubleshooting FAQ | [NEEDS CREATION] | Wiki/Doc | Common issues and solutions |
-| Runbooks | [NEEDS CREATION] | Ops Manual | Incident response and operational procedures |
 
 ### Technical Context
 
+<!-- List domain-specific resources, guides, or references relevant to this project. -->
+
 | Domain | Resource | Description |
 |--------|----------|-------------|
-| [Example: GraphQL Best Practices] | [URL or file] | Query optimization and schema design |
-| [Example: PostgreSQL Tuning] | [URL or file] | Performance tuning for database layer |
 
 ---
 
@@ -117,15 +161,7 @@
 
 ## Bootstrap Checklist
 
-If this System Map shows many "⚠️ Missing" artifacts, prioritize creating:
-
-- [ ] **System Architecture Diagram**: Essential for understanding component boundaries.
-- [ ] **Database Schema**: Critical for data model discussions.
-- [ ] **API Design Doc**: Needed for frontend-backend contracts.
-- [ ] **ADR Index**: Start capturing architectural decisions immediately.
-- [ ] **Test Strategy**: Define quality gates and coverage expectations.
-
-These form the **Minimum Viable Documentation (MVD)** for effective Spec-Driven Development.
+Review the Essential Artifacts tables above. Any artifact with status "⚠️ Missing" that is critical to your project should be prioritized for creation. The `/speckit.converge` phase will use this map to identify and close documentation gaps.
 
 ---
 
@@ -136,9 +172,4 @@ These form the **Minimum Viable Documentation (MVD)** for effective Spec-Driven 
 - **DO** flag missing artifacts during planning phases.
 - **DO NOT** assume artifacts exist if not listed here or marked as "⚠️ Missing".
 - **DO NOT** create duplicate documentation without updating this index.
-
----
-
-**Template Version**: 1.0.0  
-**Maintained By**: [Team/Owner]  
-**Review Frequency**: After each major feature completion
+- **DO NOT** add new sections or restructure this document. Only fill tables and update status fields.

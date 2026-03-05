@@ -9,10 +9,9 @@ version: "2.0.0"
 # Skills configuration
 skills:
   # Directories to scan for skills (relative to repo root)
-  # Default: [.github/skills/, .claude/skills/]
+  # Default: [.github/skills/]
   scan_dirs:
     - .github/skills/
-    - .claude/skills/
 
 # Memory configuration
 memory:

@@ -12,9 +12,6 @@ handoffs:
 scripts:
   sh: scripts/bash/check-prerequisites.sh --json
   ps: scripts/powershell/check-prerequisites.ps1 -Json
-agent_scripts:
-  sh: scripts/bash/update-agent-context.sh __AGENT__ tasks
-  ps: scripts/powershell/update-agent-context.ps1 -AgentType __AGENT__ -Phase tasks
 ---
 
 ## User Input
@@ -29,12 +26,14 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 1. **Setup**: Run `{SCRIPT}` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
-2. **Load design documents**: Read from FEATURE_DIR:
+2. **Load active skills**: Run `python3 scripts/resolve-skills.py tasks .` from repo root and read the **entire output**. The skills returned are **MANDATORY** for this phase — you MUST adopt their personas and follow all workflow steps they define with highest priority. Do not simplify or skip any steps.
+
+3. **Load design documents**: Read from FEATURE_DIR:
    - **Required**: plan.md (tech stack, libraries, structure), spec.md (user stories with priorities)
    - **Optional**: data-model.md (entities), contracts/ (API endpoints), research.md (decisions), quickstart.md (test scenarios)
    - Note: Not all projects have all documents. Generate tasks based on what's available.
 
-3. **Execute task generation workflow**:
+4. **Execute task generation workflow**:
    - Load plan.md and extract tech stack, libraries, project structure
    - Load spec.md and extract user stories with their priorities (P1, P2, P3, etc.)
    - If data-model.md exists: Extract entities and map to user stories
@@ -45,6 +44,7 @@ You **MUST** consider the user input before proceeding (if not empty).
      - For any requirement mapped to a skill, creating a task to *use/execute* that skill.
      - **Strict Adherence**: Ensure tasks strictly reflect the workflow steps defined in the skill. Do not simplify or merge steps if the skill prescribes a specific sequence.
      - Label such tasks with `[Skill: Name]`.
+     - **Default fallback**: If no domain skill is matched for a user story, label its implementation and test tasks with `[Skill: speckit-developer]`.
    - Generate tasks organized by user story (see Task Generation Rules below)
    - Generate dependency graph showing user story completion order
    - Create parallel execution examples per user story
@@ -59,7 +59,7 @@ You **MUST** consider the user input before proceeding (if not empty).
      - Label all Phase N tasks with `[Skill: speckit-librarian]`
    - Validate task completeness (each user story has all needed tasks, independently testable)
 
-4. **Generate tasks.md**: Use `templates/tasks-template.md` as structure, fill with:
+5. **Generate tasks.md**: Use `templates/tasks-template.md` as structure, fill with:
    - Correct feature name from plan.md
    - Phase 1: Setup tasks (project initialization)
    - Phase 2: Foundational tasks (blocking prerequisites for all user stories)
@@ -72,7 +72,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Parallel execution examples per story
    - Implementation strategy section (MVP first, incremental delivery)
 
-5. **Report**: Output path to generated tasks.md and summary:
+6. **Report**: Output path to generated tasks.md and summary:
    - Total task count
    - Task count per user story
    - Parallel opportunities identified
@@ -95,7 +95,7 @@ The tasks.md should be immediately executable - each task must be specific enoug
 Every task MUST strictly follow this format:
 
 ```text
-- [ ] [TaskID] [P?] [Story?] Description with file path
+- [ ] [TaskID] [P?] [Story?] [Skill?] Description with file path
 ```
 
 **Format Components**:
@@ -109,14 +109,22 @@ Every task MUST strictly follow this format:
    - Foundational phase: NO story label  
    - User Story phases: MUST have story label
    - Polish phase: NO story label
-5. **Description**: Clear action with exact file path
+5. **[Skill] label**: Include when a task uses a specialized skill
+   - Format: [Skill: name], e.g. `[Skill: speckit-developer]`, `[Skill: speckit-librarian]`
+   - If no domain skill is matched in plan.md "Skill Alignment Strategy", implementation tasks default to `[Skill: speckit-developer]`
+   - Phase N convergence tasks always use `[Skill: speckit-librarian]`
+   - Omit when no skill applies (e.g. simple setup steps)
+   - **One skill per task** — if a task seems to require multiple skills, split it into smaller tasks
+6. **Description**: Clear action with exact file path
 
 **Examples**:
 
 - ✅ CORRECT: `- [ ] T001 Create project structure per implementation plan`
 - ✅ CORRECT: `- [ ] T005 [P] Implement authentication middleware in src/middleware/auth.py`
 - ✅ CORRECT: `- [ ] T012 [P] [US1] Create User model in src/models/user.py`
-- ✅ CORRECT: `- [ ] T014 [US1] Implement UserService in src/services/user_service.py`
+- ✅ CORRECT: `- [ ] T014 [US1] [Skill: speckit-developer] Implement UserService in src/services/user_service.py`
+- ✅ CORRECT: `- [ ] T035 [P] [Skill: speckit-developer] Run pytest tests/ -v and confirm zero failures`
+- ✅ CORRECT: `- [ ] TN01 [Skill: speckit-librarian] Update CHANGELOG.md with behavioral fix entry`
 - ❌ WRONG: `- [ ] Create User model` (missing ID and Story label)
 - ❌ WRONG: `T001 [US1] Create model` (missing checkbox)
 - ❌ WRONG: `- [ ] [US1] Create User model` (missing Task ID)

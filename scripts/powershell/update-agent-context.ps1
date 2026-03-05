@@ -26,10 +26,7 @@ Relies on common helper functions in common.ps1
 param(
     [Parameter(Position=0)]
     [ValidateSet('claude','gemini','copilot','cursor-agent','qwen','opencode','codex','windsurf','kilocode','auggie','roo','codebuddy','amp','shai','q','bob','qoder')]
-    [string]$AgentType,
-    
-    [Parameter(Position=1)]
-    [string]$Phase
+    [string]$AgentType
 )
 
 $ErrorActionPreference = 'Stop'
@@ -188,7 +185,15 @@ function Get-CommandsForLanguage {
         [string]$Lang
     )
     switch -Regex ($Lang) {
-        'Python' { return "cd src; pytest; ruff check ." }
+        'Python' {
+            # Prefer `pytest tests/` when a top-level tests/ directory exists;
+            # fall back to `pytest src/` for src-layout projects without a separate tests/ dir.
+            if (Test-Path (Join-Path $REPO_ROOT 'tests')) {
+                return "pytest tests/"
+            } else {
+                return "pytest src/"
+            }
+        }
         'Rust' { return "cargo test; cargo clippy" }
         'JavaScript|TypeScript' { return "npm test; npm run lint" }
         default { return "# Add commands for $Lang" }
@@ -277,18 +282,15 @@ function Update-ExistingAgentFile {
     if (-not (Test-Path $TargetFile)) { return (New-AgentFile -TargetFile $TargetFile -ProjectName (Split-Path $REPO_ROOT -Leaf) -Date $Date) }
 
     $techStack = Format-TechnologyStack -Lang $NEW_LANG -Framework $NEW_FRAMEWORK
+    $newCommands = Get-CommandsForLanguage -Lang $NEW_LANG
     $newTechEntries = @()
+    # Always (re-)populate entries for the current branch; old entries for this
+    # branch are removed in the loop below so each branch has exactly one entry.
     if ($techStack) {
-        $escapedTechStack = [Regex]::Escape($techStack)
-        if (-not (Select-String -Pattern $escapedTechStack -Path $TargetFile -Quiet)) { 
-            $newTechEntries += "- $techStack ($CURRENT_BRANCH)" 
-        }
+        $newTechEntries += "- $techStack ($CURRENT_BRANCH)" 
     }
     if ($NEW_DB -and $NEW_DB -notin @('N/A','NEEDS CLARIFICATION')) {
-        $escapedDB = [Regex]::Escape($NEW_DB)
-        if (-not (Select-String -Pattern $escapedDB -Path $TargetFile -Quiet)) { 
-            $newTechEntries += "- $NEW_DB ($CURRENT_BRANCH)" 
-        }
+        $newTechEntries += "- $NEW_DB ($CURRENT_BRANCH)" 
     }
     $newChangeEntry = ''
     if ($techStack) { $newChangeEntry = "- ${CURRENT_BRANCH}: Added ${techStack}" }
@@ -296,7 +298,9 @@ function Update-ExistingAgentFile {
 
     $lines = Get-Content -LiteralPath $TargetFile -Encoding utf8
     $output = New-Object System.Collections.Generic.List[string]
-    $inTech = $false; $inChanges = $false; $techAdded = $false; $changeAdded = $false; $existingChanges = 0
+    $inTech = $false; $inChanges = $false; $inCommands = $false
+    $techAdded = $false; $changeAdded = $false; $commandsWritten = $false
+    $existingChanges = 0
 
     for ($i=0; $i -lt $lines.Count; $i++) {
         $line = $lines[$i]
@@ -309,18 +313,46 @@ function Update-ExistingAgentFile {
             if (-not $techAdded -and $newTechEntries.Count -gt 0) { $newTechEntries | ForEach-Object { $output.Add($_) }; $techAdded = $true }
             $output.Add($line); $inTech = $false; continue
         }
+        # Drop stale entries for the current branch in the Active Technologies
+        # section; newTechEntries will replace them.
+        if ($inTech -and $line.EndsWith("($CURRENT_BRANCH)")) {
+            continue
+        }
         if ($inTech -and [string]::IsNullOrWhiteSpace($line)) {
             if (-not $techAdded -and $newTechEntries.Count -gt 0) { $newTechEntries | ForEach-Object { $output.Add($_) }; $techAdded = $true }
             $output.Add($line); continue
         }
+        # Handle Commands section — replace all content with freshly computed commands
+        if ($line -eq '## Commands') {
+            $output.Add($line)
+            $inCommands = $true
+            continue
+        }
+        if ($inCommands -and $line -match '^##\s') {
+            # Flush new commands before leaving the section
+            if (-not $commandsWritten) {
+                $output.Add($newCommands)
+                $commandsWritten = $true
+            }
+            $output.Add('')
+            $output.Add($line); $inCommands = $false; continue
+        }
+        if ($inCommands) {
+            # Drop all existing lines in the Commands section
+            continue
+        }
         if ($line -eq '## Recent Changes') {
             $output.Add($line)
+            # Always write the fresh entry; stale entries for this branch are dropped below
             if ($newChangeEntry) { $output.Add($newChangeEntry); $changeAdded = $true }
             $inChanges = $true
             continue
         }
         if ($inChanges -and $line -match '^##\s') { $output.Add($line); $inChanges = $false; continue }
         if ($inChanges -and $line -match '^- ') {
+            # Drop stale entries for the current branch (newChangeEntry already written above)
+            if ($line.StartsWith("- ${CURRENT_BRANCH}:")) { continue }
+            # Keep only first 2 existing changes from other branches
             if ($existingChanges -lt 2) { $output.Add($line); $existingChanges++ }
             continue
         }
@@ -340,60 +372,6 @@ function Update-ExistingAgentFile {
     return $true
 }
 
-function Update-SkillsSection {
-    param(
-        [Parameter(Mandatory=$true)]
-        [string]$TargetFile,
-        [Parameter(Mandatory=$true)]
-        [string]$Phase
-    )
-    
-    $marker = '<!-- SPECKIT_ACTIVE_SKILLS -->'
-    Write-Info "Updating active skills for phase: $Phase"
-    
-    if (-not (Test-Path $TargetFile)) {
-        Write-Err "Target file does not exist: $TargetFile"
-        return $false
-    }
-    
-    # Read content and find marker position
-    $lines = Get-Content -LiteralPath $TargetFile -Encoding utf8
-    $output = New-Object System.Collections.Generic.List[string]
-    $markerFound = $false
-    
-    foreach ($line in $lines) {
-        if ($line -eq $marker) {
-            $markerFound = $true
-            break
-        }
-        $output.Add($line)
-    }
-    
-    # Add marker and skills content
-    $output.Add('')
-    $output.Add($marker)
-    
-    # Call Python resolver script
-    $resolverScript = Join-Path $REPO_ROOT 'scripts' 'resolve-skills.py'
-    if (Test-Path $resolverScript) {
-        try {
-            $skillsOutput = & python3 $resolverScript $Phase $REPO_ROOT 2>&1
-            if ($LASTEXITCODE -eq 0) {
-                $skillsOutput | ForEach-Object { $output.Add($_) }
-            } else {
-                Write-WarningMsg "Failed to resolve skills for phase $Phase"
-            }
-        } catch {
-            Write-WarningMsg "Error calling resolve-skills.py: $_"
-        }
-    } else {
-        Write-WarningMsg "Skill resolver script not found at $resolverScript"
-    }
-    
-    # Write back to file
-    Set-Content -LiteralPath $TargetFile -Value ($output -join [Environment]::NewLine) -Encoding utf8
-    return $true
-}
 
 function Update-AgentFile {
     param(
@@ -418,15 +396,6 @@ function Update-AgentFile {
         } catch {
             Write-Err "Cannot access or update existing file: $TargetFile. $_"
             return $false
-        }
-    }
-    
-    # Inject Skills if Phase is present
-    if ($Phase) {
-        if (Update-SkillsSection -TargetFile $TargetFile -Phase $Phase) {
-            Write-Success "Updated skills section for phase: $Phase"
-        } else {
-            Write-Err "Failed to update skills section"
         }
     }
     

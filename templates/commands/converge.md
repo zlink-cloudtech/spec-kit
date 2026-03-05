@@ -8,9 +8,6 @@ handoffs:
 scripts:
   sh: scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks
   ps: scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks
-agent_scripts:
-  sh: scripts/bash/update-agent-context.sh __AGENT__ converge
-  ps: scripts/powershell/update-agent-context.ps1 -AgentType __AGENT__ -Phase converge
 ---
 
 ## User Input
@@ -25,24 +22,26 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 1. **Setup**: Run `{SCRIPT}` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute.
 
-2. **Locate Convergence Tasks**: Read `tasks.md` and find the `<!-- CONVERGENCE_BOUNDARY -->` marker.
+2. **Load active skills**: Run `python3 scripts/resolve-skills.py converge .` from repo root and read the **entire output**. The skills returned are **MANDATORY** for this phase — you MUST adopt their personas and follow all workflow steps they define with highest priority. Do not simplify or skip any steps.
+
+3. **Locate Convergence Tasks**: Read `tasks.md` and find the `<!-- CONVERGENCE_BOUNDARY -->` marker.
    - Extract all tasks **below** the boundary (Phase N: System Convergence).
    - If no boundary marker found, report error and suggest running `/speckit.tasks` to regenerate.
 
-3. **Verify Pre-conditions**:
+4. **Verify Pre-conditions**:
    - Check that all tasks **above** the boundary (Phases 1 through N-1) are marked as `[X]` (complete).
    - If incomplete tasks exist above the boundary, **STOP** and report:
      - List of incomplete tasks with their IDs
      - Prompt user: "Implementation tasks are not complete. Run `/speckit.implement` first."
    - If all pre-implementation tasks are complete, proceed.
 
-4. **Load Convergence Context**:
+5. **Load Convergence Context**:
    - **REQUIRED**: Read `plan.md` — extract "Documentation State Matrix" and "Gap Analysis" sections
-   - **REQUIRED**: Read `memory/system-map.md` (if exists) — current documentation index
+   - **REQUIRED**: Read `memory/system-map.md` — current documentation index
+     - If `memory/system-map.md` does **not** exist, **STOP** and prompt the user: "System Map not found. Run `/speckit.constitution` first to initialize project memory files (constitution + system-map)."
    - **IF EXISTS**: Read `memory/constitution.md` — governance principles
-   - Load active skills for `converge` phase (speckit-librarian)
 
-5. **Execute Phase N Tasks** in order:
+6. **Execute Phase N Tasks** in order:
    - For each task in the convergence phase:
      a. Read the task description and any `(Ref: ...)` context
      b. Execute the task following skill instructions
@@ -54,13 +53,13 @@ You **MUST** consider the user input before proceeding (if not empty).
      - **Gap Closure Tasks**: Create missing essential artifacts flagged in plan.md
      - **Validation Tasks**: Verify documentation completeness and TDD compliance
 
-6. **Convergence Validation**:
+7. **Convergence Validation**:
    - Verify every entry in plan.md "Documentation State Matrix" has a completed task
    - Verify every entry in plan.md "Gap Analysis" has a completed bootstrapping task
    - Verify `memory/system-map.md` reflects the current state of all artifacts
    - Report any unclosed items as warnings
 
-7. **Convergence Report**: Output summary including:
+8. **Convergence Report**: Output summary including:
    - Documents updated (with paths)
    - ADRs created/updated
    - Gaps closed
