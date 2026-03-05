@@ -57,7 +57,6 @@ eval $(get_feature_paths)
 
 NEW_PLAN="$IMPL_PLAN"  # Alias for compatibility with existing code
 AGENT_TYPE="${1:-}"
-PHASE="${2:-}"
 
 # Agent-specific file paths  
 CLAUDE_FILE="$REPO_ROOT/CLAUDE.md"
@@ -249,18 +248,31 @@ get_commands_for_language() {
     
     case "$lang" in
         *"Python"*)
-            echo "cd src && pytest && ruff check ."
+            # Prefer `pytest tests/` when a top-level tests/ directory exists;
+            # fall back to `pytest src/` for src-layout projects without a separate tests/ dir.
+            if [[ -d "${REPO_ROOT}/tests" ]]; then
+                echo "pytest tests/"
+            else
+                echo "pytest src/"
+            fi
             ;;
         *"Rust"*)
             echo "cargo test && cargo clippy"
             ;;
         *"JavaScript"*|*"TypeScript"*)
-            echo "npm test \\&\\& npm run lint"
+            echo "npm test && npm run lint"
             ;;
         *)
             echo "# Add commands for $lang"
             ;;
     esac
+}
+
+# Escape a string for use as a sed replacement value.
+# In sed, '&' means "matched text" and '\' is the escape character;
+# both must be escaped so they appear literally in the output.
+escape_sed_replacement() {
+    printf '%s\n' "$1" | sed 's/\\/\\\\/g; s/&/\\&/g'
 }
 
 get_language_conventions() {
@@ -306,6 +318,11 @@ create_new_agent_file() {
     local escaped_lang=$(printf '%s\n' "$NEW_LANG" | sed 's/[\[\.*^$()+{}|]/\\&/g')
     local escaped_framework=$(printf '%s\n' "$NEW_FRAMEWORK" | sed 's/[\[\.*^$()+{}|]/\\&/g')
     local escaped_branch=$(printf '%s\n' "$CURRENT_BRANCH" | sed 's/[\[\.*^$()+{}|]/\\&/g')
+    # Escape values used as sed replacement strings (&, \)
+    local escaped_commands
+    escaped_commands=$(escape_sed_replacement "$commands")
+    local escaped_language_conventions
+    escaped_language_conventions=$(escape_sed_replacement "$language_conventions")
     
     # Build technology stack and recent change strings conditionally
     local tech_stack
@@ -335,8 +352,8 @@ create_new_agent_file() {
         "s|\[DATE\]|$current_date|"
         "s|\[EXTRACTED FROM ALL PLAN.MD FILES\]|$tech_stack|"
         "s|\[ACTUAL STRUCTURE FROM PLANS\]|$project_structure|g"
-        "s|\[ONLY COMMANDS FOR ACTIVE TECHNOLOGIES\]|$commands|g"
-        "s|\[LANGUAGE-SPECIFIC, ONLY FOR LANGUAGES IN USE\]|$language_conventions|"
+        "s|\[ONLY COMMANDS FOR ACTIVE TECHNOLOGIES\]|$escaped_commands|g"
+        "s|\[LANGUAGE-SPECIFIC, ONLY FOR LANGUAGES IN USE\]|$escaped_language_conventions|"
         "s|\[LAST 3 FEATURES AND WHAT THEY ADDED\]|$recent_change|"
     )
     
@@ -376,15 +393,20 @@ update_existing_agent_file() {
     
     # Process the file in one pass
     local tech_stack=$(format_technology_stack "$NEW_LANG" "$NEW_FRAMEWORK")
+    local new_commands
+    new_commands=$(get_commands_for_language "$NEW_LANG")
     local new_tech_entries=()
     local new_change_entry=""
     
-    # Prepare new technology entries
-    if [[ -n "$tech_stack" ]] && ! grep -q "$tech_stack" "$target_file"; then
+    # Prepare new technology entries.
+    # Always (re-)populate entries for the current branch; old entries for this
+    # branch are removed in the line-by-line loop below so each branch has
+    # exactly one entry in Active Technologies.
+    if [[ -n "$tech_stack" ]]; then
         new_tech_entries+=("- $tech_stack ($CURRENT_BRANCH)")
     fi
     
-    if [[ -n "$NEW_DB" ]] && [[ "$NEW_DB" != "N/A" ]] && [[ "$NEW_DB" != "NEEDS CLARIFICATION" ]] && ! grep -q "$NEW_DB" "$target_file"; then
+    if [[ -n "$NEW_DB" ]] && [[ "$NEW_DB" != "N/A" ]] && [[ "$NEW_DB" != "NEEDS CLARIFICATION" ]]; then
         new_tech_entries+=("- $NEW_DB ($CURRENT_BRANCH)")
     fi
     
@@ -410,8 +432,10 @@ update_existing_agent_file() {
     # Process file line by line
     local in_tech_section=false
     local in_changes_section=false
+    local in_commands_section=false
     local tech_entries_added=false
     local changes_entries_added=false
+    local commands_written=false
     local existing_changes_count=0
     local file_ended=false
     
@@ -430,6 +454,10 @@ update_existing_agent_file() {
             echo "$line" >> "$temp_file"
             in_tech_section=false
             continue
+        elif [[ $in_tech_section == true ]] && [[ "$line" == *"($CURRENT_BRANCH)" ]]; then
+            # Drop stale entries for the current branch; new_tech_entries will
+            # replace them (added at the first blank line or next section header)
+            continue
         elif [[ $in_tech_section == true ]] && [[ -z "$line" ]]; then
             # Add new tech entries before empty line in tech section
             if [[ $tech_entries_added == false ]] && [[ ${#new_tech_entries[@]} -gt 0 ]]; then
@@ -440,10 +468,30 @@ update_existing_agent_file() {
             continue
         fi
         
+        # Handle Commands section — replace all content with freshly computed commands
+        if [[ "$line" == "## Commands" ]]; then
+            echo "$line" >> "$temp_file"
+            in_commands_section=true
+            continue
+        elif [[ $in_commands_section == true ]] && [[ "$line" =~ ^##[[:space:]] ]]; then
+            # Flush new commands before leaving the section
+            if [[ $commands_written == false ]]; then
+                echo "$new_commands" >> "$temp_file"
+                commands_written=true
+            fi
+            echo "" >> "$temp_file"
+            echo "$line" >> "$temp_file"
+            in_commands_section=false
+            continue
+        elif [[ $in_commands_section == true ]]; then
+            # Drop all existing lines in the Commands section
+            continue
+        fi
+        
         # Handle Recent Changes section
         if [[ "$line" == "## Recent Changes" ]]; then
             echo "$line" >> "$temp_file"
-            # Add new change entry right after the heading
+            # Always write the fresh entry; stale entries for this branch are dropped below
             if [[ -n "$new_change_entry" ]]; then
                 echo "$new_change_entry" >> "$temp_file"
             fi
@@ -455,7 +503,11 @@ update_existing_agent_file() {
             in_changes_section=false
             continue
         elif [[ $in_changes_section == true ]] && [[ "$line" == "- "* ]]; then
-            # Keep only first 2 existing changes
+            # Drop stale entries for the current branch (new_change_entry already written above)
+            if [[ "$line" == "- $CURRENT_BRANCH:"* ]]; then
+                continue
+            fi
+            # Keep only first 2 existing changes from other branches
             if [[ $existing_changes_count -lt 2 ]]; then
                 echo "$line" >> "$temp_file"
                 ((existing_changes_count++))
@@ -501,42 +553,36 @@ update_existing_agent_file() {
     
     return 0
 }
-update_skills_section() {
+
+ensure_copilot_frontmatter() {
     local target_file="$1"
-    local phase="$2"
-    local marker="<!-- SPECKIT_ACTIVE_SKILLS -->"
-    
-    log_info "Updating active skills for phase: $phase"
-    
-    # Create temp file
-    local temp_file
-    temp_file=$(mktemp) || {
-        log_error "Failed to create temporary file for skills update"
-        return 1
-    }
-    
-    # Copy content up to marker (or whole file if marker not found)
-    # We use awk to be safer than sed across platforms
-    awk -v marker="$marker" '
-    $0 ~ marker { exit } 
-    { print }
-    ' "$target_file" > "$temp_file"
-    
-    # Append marker and new skills
-    echo "" >> "$temp_file"
-    echo "$marker" >> "$temp_file"
-    
-    if ! python3 "$SCRIPT_DIR/../resolve-skills.py" "$phase" "$REPO_ROOT" >> "$temp_file"; then
-        log_warning "Failed to resolve skills for phase $phase"
+    local project_name="$2"
+
+    # Check if frontmatter already exists (file starts with ---)
+    if head -1 "$target_file" 2>/dev/null | grep -q "^---$"; then
+        return 0
     fi
-    
-    # Replace file
+
+    # Prepend the required GitHub Copilot instructions frontmatter
+    local temp_file
+    temp_file=$(mktemp) || { log_error "Failed to create temporary file for frontmatter"; return 1; }
+
+    cat > "$temp_file" <<EOF
+---
+applyTo: '**'
+description: This file specifies the development guidelines for the ${project_name} project, including active technologies, project structure, commands, code style, and recent changes.
+---
+
+EOF
+    cat "$target_file" >> "$temp_file"
+
     if ! mv "$temp_file" "$target_file"; then
-        log_error "Failed to update skills in target file"
+        log_error "Failed to prepend frontmatter to $target_file"
         rm -f "$temp_file"
         return 1
     fi
-    
+
+    log_info "Added required frontmatter to Copilot instructions file"
     return 0
 }
 
@@ -610,14 +656,10 @@ update_agent_file() {
             return 1
         fi
     fi
-    
-    # Inject Skills if Phase is present
-    if [[ -n "$PHASE" ]]; then
-        if update_skills_section "$target_file" "$PHASE"; then
-            log_success "Updated skills section for phase: $PHASE"
-        else
-            log_error "Failed to update skills section"
-        fi
+
+    # For GitHub Copilot, ensure the instructions file has the required frontmatter
+    if [[ "$agent_name" == "GitHub Copilot" ]]; then
+        ensure_copilot_frontmatter "$target_file" "$project_name"
     fi
 
     return 0

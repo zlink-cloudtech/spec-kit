@@ -83,13 +83,115 @@ def _parse_config(config_path):
     return config
 
 
+def list_domain_skills(repo_root):
+    """List skills that have SKILL.md but NO speckit-adapter.yaml (domain/user skills)."""
+    skill_dirs = get_skill_dirs(repo_root)
+    results = []
+    seen_names = set()
+
+    for skills_dir in skill_dirs:
+        if not os.path.isdir(skills_dir):
+            continue
+        for entry in sorted(os.listdir(skills_dir)):
+            skill_path = os.path.join(skills_dir, entry)
+            if not os.path.isdir(skill_path):
+                continue
+            skill_md = os.path.join(skill_path, "SKILL.md")
+            adapter = os.path.join(skill_path, "speckit-adapter.yaml")
+            if os.path.isfile(skill_md) and not os.path.isfile(adapter):
+                name, description = _parse_skill_md(skill_md, entry)
+                if name not in seen_names:
+                    seen_names.add(name)
+                    results.append({"name": name, "description": description})
+
+    return results
+
+
+def _parse_skill_md(skill_md_path, fallback_name):
+    """Extract name and description from SKILL.md frontmatter.
+    Handles inline values, quoted strings, and YAML block scalars (>, >-, |, |-).
+    """
+    name = fallback_name
+    description = ""
+    try:
+        with open(skill_md_path, 'r') as f:
+            lines = f.readlines()
+
+        if not lines or lines[0].strip() != '---':
+            return name, description
+
+        # Find end of frontmatter
+        fm_end = None
+        for i, line in enumerate(lines[1:], 1):
+            if line.strip() == '---':
+                fm_end = i
+                break
+        if fm_end is None:
+            return name, description
+
+        fm_lines = lines[1:fm_end]
+        i = 0
+        while i < len(fm_lines):
+            line = fm_lines[i]
+            stripped = line.strip()
+
+            if stripped.startswith('name:'):
+                val = stripped.split(':', 1)[1].strip().strip('"').strip("'")
+                if val:
+                    name = val
+            elif stripped.startswith('description:'):
+                val = stripped.split(':', 1)[1].strip()
+                if val in ('>', '>-', '|', '|-'):
+                    # Block scalar: collect subsequent indented lines
+                    block_lines = []
+                    i += 1
+                    while i < len(fm_lines):
+                        next_line = fm_lines[i]
+                        if next_line and not next_line[0].isspace():
+                            break
+                        content = next_line.strip()
+                        if content:
+                            block_lines.append(content)
+                        i += 1
+                    # For folded (>) join with space; for literal (|) join with space too (first line)
+                    description = ' '.join(block_lines) if block_lines else ""
+                    continue
+                else:
+                    description = val.strip('"').strip("'")
+            i += 1
+
+        # Fallback: first non-empty, non-header body line
+        if not description:
+            for line in lines[fm_end + 1:]:
+                stripped = line.strip()
+                if stripped and not stripped.startswith('#'):
+                    description = stripped
+                    break
+    except Exception:
+        pass
+    return name, description
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: resolve-skills.py <phase> [repo_root]")
+        print("       resolve-skills.py --list-domain [repo_root]")
         sys.exit(1)
 
     phase = sys.argv[1]
     repo_root = sys.argv[2] if len(sys.argv) > 2 else os.getcwd()
+
+    # --list-domain: output non-adapter (domain/user) skills for specify-phase discovery
+    if phase == "--list-domain":
+        skills = list_domain_skills(repo_root)
+        if skills:
+            for skill in skills:
+                desc = skill['description'] or "(no description)"
+                print(f"- **{skill['name']}**: {desc}")
+        else:
+            print("_No domain skills found in configured scan directories._")
+        return
+
     skill_dirs = get_skill_dirs(repo_root)
 
     # Find all adapter files across all skill directories
@@ -130,10 +232,13 @@ def main():
                         if context_file:
                             full_path = os.path.join(skill_dir, context_file)
                             if os.path.exists(full_path):
+                                skill_name = data.get('name', 'Unknown')
+                                _, description = _parse_skill_md(full_path, skill_name)
                                 matched_skills.append({
                                     'priority': priority,
                                     'path': full_path,
-                                    'name': data.get('name', 'Unknown'),
+                                    'name': skill_name,
+                                    'description': description,
                                     'instructions': instructions
                                 })
         except Exception as e:
@@ -143,31 +248,35 @@ def main():
     matched_skills.sort(key=lambda x: x['priority'], reverse=True)
 
     if matched_skills:
-        print(f"\n## Active Skills (Phase: {phase})")
-        print("\nThe following specialist skills are active for this phase. You MUST adopt their personas and follow their workflows.\n")
+        print(f'<active_skills phase="{phase}" count="{len(matched_skills)}">')
+        print(f'  <directive>The following specialist skills are active for this phase. You MUST read each skill\'s persona_file and fully adopt its persona and workflows before proceeding.</directive>')
         
         for skill in matched_skills:
-            print(f"### Skill: {skill['name']}")
-            try:
-                with open(skill['path'], 'r') as f:
-                    content = f.read()
-                    # Strip frontmatter if present
-                    if content.startswith('---'):
-                        parts = content.split('---', 2)
-                        if len(parts) >= 3:
-                            content = parts[2]
-                    print(content.strip())
-                    # Append instructions from adapter if present
-                    if skill.get('instructions'):
-                        print(f"\n{skill['instructions'].strip()}")
-                    print("\n---\n")
-            except Exception as e:
-                sys.stderr.write(f"Error reading skill content {skill['path']}: {e}\n")
+            name = skill['name']
+            description = skill.get('description', '')
+            print(f'\n  <skill name="{name}">')
+            if description:
+                print(f'    <description>{description}</description>')
+            print(f'    <persona_file>{skill["path"]}</persona_file>')
+            if skill.get('instructions'):
+                print('    <integration>')
+                print(skill['instructions'].strip())
+                print('    </integration>')
+            print(f'  </skill>')
+        
+        print('\n</active_skills>')
+    else:
+        print(f'<active_skills phase="{phase}" count="0">')
+        print(f'  <directive>No specialist skills are configured for this phase. Proceed with general best practices.</directive>')
+        print('</active_skills>')
 
 def manual_parse(text):
     # Basic parser for adapter YAML format with multi-line instructions support
     import re
-    data = {'hooks': []}
+    data = {
+        'hooks': [],
+        'name': 'Unknown'
+    }
     current_hook = {}
     
     lines = text.split('\n')

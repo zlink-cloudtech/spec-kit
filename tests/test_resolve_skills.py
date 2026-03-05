@@ -73,7 +73,8 @@ class TestManualParse:
                 context: SKILL.md
         """)
         data = resolve_skills.manual_parse(text)
-        assert 'name' not in data
+        # manual_parse() defaults to 'Unknown' when no name field is present
+        assert data.get('name') == 'Unknown'
         assert len(data['hooks']) == 1
 
     def test_malformed_yaml(self):
@@ -178,14 +179,16 @@ class TestSkillResolution:
             resolve_skills.main()
         output = stdout.getvalue()
         assert 'test-skill' in output
-        assert 'Test Skill' in output
+        # Output is now XML; description text is emitted, not the markdown heading
+        assert 'You are a test skill.' in output
 
     def test_phase_no_match(self):
         stdout = io.StringIO()
         sys.argv = ['resolve-skills.py', 'implement', self.tmpdir]
         with redirect_stdout(stdout):
             resolve_skills.main()
-        assert stdout.getvalue() == ''
+        # Output is now XML; an empty-skills envelope is always emitted
+        assert 'count="0"' in stdout.getvalue()
 
     def test_instructions_injected(self):
         stdout = io.StringIO()

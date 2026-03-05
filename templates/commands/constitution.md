@@ -54,7 +54,7 @@ Follow this execution flow:
    - List of modified principles (old title → new title if renamed)
    - Added sections
    - Removed sections
-   - Templates requiring updates (✅ updated / ⚠ pending) with file paths
+   - Templates requiring updates: use ✅ = verified no changes needed, ⚠ = needs verification or update, ❌ = conflict found
    - Follow-up TODOs if any placeholders intentionally deferred.
 
 6. Validation before final output:
@@ -65,7 +65,22 @@ Follow this execution flow:
 
 7. Write the completed constitution back to `.specify/memory/constitution.md` (overwrite).
 
-8. Output a final summary to the user with:
+8. **System Map update**: Update `memory/system-map.md` with project metadata derived from the constitution:
+   - If `memory/system-map.md` does not exist, copy `templates/system-map-template.md` to `memory/system-map.md` first.
+   - **MUST preserve the template section structure and headings**. Do NOT add new sections, remove existing sections, or restructure the document.
+   - Fill or update the **Project Identity** section only:
+     a. `[PROJECT_NAME]` and `[PROJECT_DESCRIPTION]` from the constitution
+     b. **Core Principles**: numbered list summarizing each constitution principle (one line each)
+     c. **Technology Stack** table: scan `package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, or similar to infer primary technologies
+     d. **Project Components** table: scan the top-level directory structure to identify major components
+   - Fill the **Essential Artifacts** tables by scanning the repo for existing documentation:
+     a. For each file found (e.g., `docs/adr/`, `README.md`, `CONTRIBUTING.md`), add a row with Location, Status=✅ Active, and Description
+     b. Choose the appropriate category (Architecture, Configuration, Quality, Decisions) based on the artifact's content
+     c. Leave categories empty if no matching artifacts exist — do NOT invent placeholder rows
+   - Fill **Integration Points** and **Knowledge Sources** tables if relevant files are found; otherwise leave tables empty.
+   - Do NOT modify the "Using the System Map", "Maintenance Protocol", "Bootstrap Checklist", or "Instructions for Agents" sections.
+
+9. Output a final summary to the user with:
    - New version and bump rationale.
    - Any files flagged for manual follow-up.
    - Suggested commit message (e.g., `docs: amend constitution to vX.Y.Z (principle additions + governance update)`).

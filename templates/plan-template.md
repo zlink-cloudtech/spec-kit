@@ -55,9 +55,10 @@
 specs/[###-feature]/
 ├── plan.md              # This file (/speckit.plan command output)
 ├── research.md          # Phase 0 output (/speckit.plan command)
-├── data-model.md        # Phase 1 output (/speckit.plan command)
-├── quickstart.md        # Phase 1 output (/speckit.plan command)
-├── contracts/           # Phase 1 output (/speckit.plan command)
+├── data-model.md        # Phase 1 output — always create; write N/A content if no new data models
+├── quickstart.md        # Phase 1 output — always create; write N/A content if not user-facing
+├── contracts/
+│   └── README.md        # Phase 1 output — always create; write N/A content if no API contracts
 └── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
 ```
 
@@ -110,7 +111,9 @@ directories captured above]
 
 ## Complexity Tracking
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
+> **Fill ONLY if Constitution Check has violations that must be justified**  
+> **If NO violations**: Replace this entire table with a single sentence, e.g. "No constitution violations detected."  
+> **⚠️ DELETE the example rows below — placeholders must not appear in the final plan:**
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|

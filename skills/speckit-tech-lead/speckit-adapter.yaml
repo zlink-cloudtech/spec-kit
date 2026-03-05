@@ -4,7 +4,6 @@ hooks:
     priority: 100
     context: SKILL.md
     instructions: |
-      ## SpecKit Integration
       - Read `plan.md` "Skill Alignment Strategy" and "Relevant System Context"
       - Follow `templates/tasks-template.md` structure for task generation
       - Generate Phase N-1 (Polish) and Phase N (Convergence) tasks based on Documentation State Matrix

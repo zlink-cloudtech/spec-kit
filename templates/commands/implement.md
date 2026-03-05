@@ -3,9 +3,6 @@ description: Execute the implementation plan by processing and executing all tas
 scripts:
   sh: scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks
   ps: scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks
-agent_scripts:
-  sh: scripts/bash/update-agent-context.sh __AGENT__ implement
-  ps: scripts/powershell/update-agent-context.ps1 -AgentType __AGENT__ -Phase implement
 ---
 
 ## User Input
@@ -20,7 +17,9 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 1. Run `{SCRIPT}` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 
-2. **Check checklists status** (if FEATURE_DIR/checklists/ exists):
+2. **Load active skills**: Run `python3 scripts/resolve-skills.py implement .` from repo root and read the **entire output**. The skills returned are **MANDATORY** for this phase — you MUST adopt their personas and follow all workflow steps they define with highest priority. Do not simplify or skip any steps.
+
+3. **Check checklists status** (if FEATURE_DIR/checklists/ exists):
    - Scan all checklist files in the checklists/ directory
    - For each checklist, count:
      - Total items: All lines matching `- [ ]` or `- [X]` or `- [x]`
@@ -51,7 +50,7 @@ You **MUST** consider the user input before proceeding (if not empty).
      - Display the table showing all checklists passed
      - Automatically proceed to step 3
 
-3. Load and analyze the implementation context:
+4. Load and analyze the implementation context:
    - **REQUIRED**: Read tasks.md for the complete task list and execution plan
    - **REQUIRED**: Read plan.md for tech stack, architecture, and file structure
    - **IF EXISTS**: Read data-model.md for entities and relationships
@@ -59,7 +58,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **IF EXISTS**: Read research.md for technical decisions and constraints
    - **IF EXISTS**: Read quickstart.md for integration scenarios
 
-4. **Project Setup Verification**:
+5. **Project Setup Verification**:
    - **REQUIRED**: Create/verify ignore files based on actual project setup:
 
    **Detection & Creation Logic**:
@@ -103,14 +102,14 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Terraform**: `.terraform/`, `*.tfstate*`, `*.tfvars`, `.terraform.lock.hcl`
    - **Kubernetes/k8s**: `*.secret.yaml`, `secrets/`, `.kube/`, `kubeconfig*`, `*.key`, `*.crt`
 
-5. Parse tasks.md structure and extract:
+6. Parse tasks.md structure and extract:
    - **Task phases**: Setup, Tests, Core, Integration, Polish
    - **Task dependencies**: Sequential vs parallel execution rules
    - **Task details**: ID, description, file paths, parallel markers [P]
    - **Execution flow**: Order and dependency requirements
    - **Convergence boundary**: Locate `<!-- CONVERGENCE_BOUNDARY -->` marker (if present)
 
-6. Execute implementation following the task plan:
+7. Execute implementation following the task plan:
    - **Skill Usage**: Look for tasks labeled `[Skill: Name]`. Prioritize reading and following the skill instructions (from `.specify/skills`, `.github/skills`, etc.) when executing these tasks.
    - **Phase-by-phase execution**: Complete each phase before moving to the next
    - **Respect dependencies**: Run sequential tasks in order, parallel tasks [P] can run together  
@@ -119,7 +118,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Validation checkpoints**: Verify each phase completion before proceeding
    - **⚠️ CONVERGENCE BOUNDARY**: When reaching `<!-- CONVERGENCE_BOUNDARY -->`, **HARD STOP**. Do NOT execute any tasks below this marker. These are Phase N (Convergence) tasks reserved for `/speckit.converge`.
 
-7. **Pre-convergence Check** (after completing all tasks above the boundary):
+8. **Pre-convergence Check** (after completing all tasks above the boundary):
    - Verify all Phase N-1 (Polish) tasks are marked as `[X]`
    - If any Phase N-1 tasks remain incomplete, list them and prompt the user to complete them
    - Once all pre-boundary tasks are complete, output:
@@ -127,14 +126,14 @@ You **MUST** consider the user input before proceeding (if not empty).
      - "📋 Phase N (System Convergence) tasks are ready"
      - "➡️  Run `/speckit.converge` to execute documentation convergence"
 
-8. Implementation execution rules:
+9. Implementation execution rules:
    - **Setup first**: Initialize project structure, dependencies, configuration
    - **Tests before code**: If you need to write tests for contracts, entities, and integration scenarios
    - **Core development**: Implement models, services, CLI commands, endpoints
    - **Integration work**: Database connections, middleware, logging, external services
    - **Polish and validation**: Unit tests, performance optimization, documentation
 
-9. Progress tracking and error handling:
+10. Progress tracking and error handling:
    - Report progress after each completed task
    - Halt execution if any non-parallel task fails
    - For parallel tasks [P], continue with successful tasks, report failed ones
@@ -142,7 +141,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Suggest next steps if implementation cannot proceed
    - **IMPORTANT** For completed tasks, make sure to mark the task off as [X] in the tasks file.
 
-10. Completion validation:
+11. Completion validation:
    - Verify all required tasks are completed
    - Check that implemented features match the original specification
    - Validate that tests pass and coverage meets requirements

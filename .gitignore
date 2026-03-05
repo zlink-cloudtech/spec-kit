@@ -39,6 +39,7 @@ env/
 .env
 .env.local
 *.lock
+TODO.md
 
 # Spec Kit-specific files
 .genreleases/
@@ -56,7 +57,9 @@ htmlcov/
 
 # AI
 /specs
-/.specify
+/.specify/**
+!/.specify/memory/
+!/.specify/memory/**
 /.github/skills/**
 /.github/agents/**
 /.github/prompts/**

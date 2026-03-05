@@ -1,7 +1,7 @@
 [project]
 name = "specify-cli"
 # base on 0.0.91
-version = "2.2.1"
+version = "2.2.2"
 description = "Specify CLI, part of GitHub Spec Kit. A tool to bootstrap your projects for Spec-Driven Development (SDD)."
 requires-python = ">=3.11"
 dependencies = [
@@ -15,6 +15,12 @@ dependencies = [
 
 [project.scripts]
 specify = "specify_cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pyyaml>=6.0",
+]
 
 [build-system]
 requires = ["hatchling"]
