@@ -6,6 +6,16 @@ All notable changes to this project from commit 9111699cd27879e3e6301651a03e502e
 > The original `CHANGELOG.md` has been renamed to `CHANGELOG.md.origin`.
 > The original `README.md` has been renamed to `README.md.origin`.
 
+## [2.2.4] - 2026-03-06
+
+### Fixed
+
+- **Clarify specs/ boundary — distill knowledge, never index in system-map**:
+  - `templates/system-map-template.md`: Added explicit DO NOT rule prohibiting `specs/` entries from appearing in the system map.
+  - `skills/speckit-librarian/SKILL.md`: Reworded Convergence responsibility to emphasize *distillation* (inputs → permanent docs) over *merging*, making clear that `specs/` are source material, not output destinations.
+  - `skills/speckit-librarian/speckit-adapter.yaml`: Added `specs/###-feature/` directories as explicit knowledge input sources; enforced NEVER-add-to-system-map rule.
+  - `templates/commands/converge.md`: Added KNOWLEDGE DISTILLATION step in context loading (Step 5); added Key Rule: `specs/` are INPUT not OUTPUT.
+
 ## [2.2.2] - 2026-03-05
 
 ### Fixed
