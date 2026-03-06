@@ -13,9 +13,12 @@ set -euo pipefail
 #
 # Usage: get-next-version.sh
 
-# Get the latest tag, or use v0.0.0 if no tags exist.
-# --match "v[0-9]*" filters only CLI release tags, ignoring service tags like release-server-v* or mcp-v*
-LATEST_TAG=$(git describe --tags --match "v[0-9]*" --abbrev=0 2>/dev/null || echo "v0.0.0")
+# Get the latest tag across ALL branches, or use v0.0.0 if no tags exist.
+# "v[0-9]*" filters only CLI release tags, ignoring service tags like release-server-v* or mcp-v*
+# Note: git describe only finds tags reachable from HEAD; using git tag --sort instead to
+# ensure tags created on other branches (e.g. main) are always considered.
+LATEST_TAG=$(git tag --list "v[0-9]*" --sort=-version:refname 2>/dev/null | head -1)
+LATEST_TAG="${LATEST_TAG:-v0.0.0}"
 echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
 
 # Extract version parts
