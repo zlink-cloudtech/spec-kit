@@ -40,6 +40,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **REQUIRED**: Read `memory/system-map.md` — current documentation index
      - If `memory/system-map.md` does **not** exist, **STOP** and prompt the user: "System Map not found. Run `/speckit.constitution` first to initialize project memory files (constitution + system-map)."
    - **IF EXISTS**: Read `memory/constitution.md` — governance principles
+   - **KNOWLEDGE DISTILLATION**: Read all artifacts in the current feature's specs directory (spec.md, plan.md, tasks.md, and any other documents) as knowledge input sources. Extract architectural decisions, design intent, and implementation context to inform the documentation you will produce.
 
 6. **Execute Phase N Tasks** in order:
    - For each task in the convergence phase:
@@ -74,3 +75,4 @@ You **MUST** consider the user input before proceeding (if not empty).
 - ADRs must use Michael Nygard format (Title, Status, Context, Decision, Consequences)
 - System Map paths must be RELATIVE from repo root
 - Do NOT modify implementation code — this phase is documentation-only
+- **`specs/` are knowledge INPUT, not documentation OUTPUT**: The feature's specs directory is a source for distillation. Never add `specs/` entries to `memory/system-map.md`. The resulting permanent documents (ADRs, architecture docs, guides) are what gets indexed.

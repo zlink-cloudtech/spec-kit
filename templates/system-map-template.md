@@ -173,3 +173,4 @@ Review the Essential Artifacts tables above. Any artifact with status "⚠️ Mi
 - **DO NOT** assume artifacts exist if not listed here or marked as "⚠️ Missing".
 - **DO NOT** create duplicate documentation without updating this index.
 - **DO NOT** add new sections or restructure this document. Only fill tables and update status fields.
+- **DO NOT** add entries from `specs/` to this map. The `specs/` directory contains transient development artifacts (feature specs, plans, tasks). Their knowledge should be distilled into permanent documentation during the Converge phase — only those resulting permanent documents belong in this map.
