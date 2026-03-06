@@ -10,6 +10,17 @@ on:
       - '.github/workflows/scripts/**'
       - 'skills/**'
   workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version bump type (auto = detect from commits: feat→minor, other→patch)'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
 
 jobs:
   release:
@@ -25,6 +36,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Get latest tag
         id: get_tag
+        env:
+          BUMP_TYPE: ${{ github.event.inputs.bump_type || 'auto' }}
         run: |
           chmod +x .github/workflows/scripts/get-next-version.sh
           .github/workflows/scripts/get-next-version.sh
@@ -45,12 +58,12 @@ jobs:
         run: |
           chmod +x .github/workflows/scripts/create-release-packages.sh
           .github/workflows/scripts/create-release-packages.sh ${{ steps.get_tag.outputs.new_version }}
-      - name: Generate release notes
+      - name: Generate release notes and update CHANGELOG.md
         if: steps.check_release.outputs.exists == 'false'
         id: release_notes
         run: |
-          chmod +x .github/workflows/scripts/generate-release-notes.sh
-          .github/workflows/scripts/generate-release-notes.sh ${{ steps.get_tag.outputs.new_version }} ${{ steps.get_tag.outputs.latest_tag }}
+          chmod +x .github/workflows/scripts/generate-release-info-changed.sh
+          .github/workflows/scripts/generate-release-info-changed.sh ${{ steps.get_tag.outputs.new_version }} ${{ steps.get_tag.outputs.latest_tag }}
       - name: Create GitHub Release
         if: steps.check_release.outputs.exists == 'false'
         run: |
@@ -59,15 +72,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Commit version bump
+      - name: Commit version bump and changelog
         if: steps.check_release.outputs.exists == 'false'
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          
-          # Only commit pyproject.toml, ignoring other potential staged changes
-          git commit -m "chore(release): bump version to ${{ steps.get_tag.outputs.new_version }} [skip ci]" pyproject.toml
-          
+
+          git commit -m "chore(release): bump version to ${{ steps.get_tag.outputs.new_version }} [skip ci]" pyproject.toml CHANGELOG.md
+
           if [ "${ACT}" == "true" ]; then
             echo "Running in act, skipping git push"
           else

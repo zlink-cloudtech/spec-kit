@@ -6,7 +6,7 @@ All notable changes to this project from commit 9111699cd27879e3e6301651a03e502e
 > The original `CHANGELOG.md` has been renamed to `CHANGELOG.md.origin`.
 > The original `README.md` has been renamed to `README.md.origin`.
 
-## [2.2.4] - 2026-03-06
+## [2.2.x] - 2026-03-6
 
 ### Fixed
 
@@ -16,14 +16,8 @@ All notable changes to this project from commit 9111699cd27879e3e6301651a03e502e
   - `skills/speckit-librarian/speckit-adapter.yaml`: Added `specs/###-feature/` directories as explicit knowledge input sources; enforced NEVER-add-to-system-map rule.
   - `templates/commands/converge.md`: Added KNOWLEDGE DISTILLATION step in context loading (Step 5); added Key Rule: `specs/` are INPUT not OUTPUT.
 
-## [2.2.2] - 2026-03-05
-
-### Fixed
-
 - **Silent no-op on exception without tracker** (`src/specify_cli/__init__.py`): `ensure_system_map_from_template()` and `ensure_speckit_config_from_template()` now return silently when an exception occurs and no `tracker` is provided — removed `console.print(...)` warning from the `except/else` branch. Previously the warning was printed to stdout, violating the documented "silent no-op" contract. Callers that omit the tracker (library usage) are no longer affected by console output side-effects. (Ref: `bug/010-system-map-no-init`)
 - **New test coverage** (`tests/test_init.py`): 24 tests added covering all code paths for `ensure_system_map_from_template()`, `ensure_speckit_config_from_template()`, and the `init()` integration — happy path, skip/idempotent, missing-template, IO-error, tracker protocol ordering, YAML content validation, and end-to-end `init()` orchestration.
-
-## [2.2.0] - 2026-02-28
 
 ### MCP
 
