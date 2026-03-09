@@ -56,7 +56,7 @@ class PackageService:
         # This is a bit racy but acceptable for this scale
         # Ideally storage should handle atomic creation or we check list
         # StorageService doesn't have `exists` method, let's list.
-        # Or add `exists` to StorageService? T005 didn't explicit ask for it but it's useful.
+        # Or add `exists` to StorageService? It's useful but not required.
         # Let's verify via existing list for now, or assume storage.save overwrites.
         # If overwrite=False, we should check.
         existing = await self.storage.list_packages()
