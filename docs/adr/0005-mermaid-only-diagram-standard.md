@@ -32,12 +32,14 @@ The `skills/speckit-architect/speckit-adapter.yaml` plan hook encodes one rule p
 ## Consequences
 
 **Positive**:
+
 - Diagram generation is deterministic and machine-verifiable: presence of `uml/sequence.md`, `uml/flow.md`, `uml/class-diagram.md`, and inline blocks in `data-model.md` can be asserted in pytest.
 - Eliminates rendering environment dependency on PlantUML servers.
 - Reduces agent instruction ambiguity: one tool, five explicit trigger rules.
 - `setup-uml-dir.sh` / `setup-uml-dir.ps1` are idempotent, enabling safe re-runs.
 
 **Negative / Trade-offs**:
+
 - Existing plan artifacts containing PlantUML syntax must be manually migrated if they are to be used as reference material.
 - Mermaid has limited layout control compared to PlantUML for very large diagrams; this is acceptable for plan-phase artifacts which should remain concise.
 - Engineers who prefer PlantUML cannot use it in SpecKit-managed plan outputs.
