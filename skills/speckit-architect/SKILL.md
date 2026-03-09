@@ -33,5 +33,19 @@ When invoked during planning, you must:
 ## Tools & Standards
 
 *   **ADR Format**: Use the Michael Nygard format (Title, Status, Context, Decision, Consequences).
-*   **Diagrams**: Prefer Mermaid.js for architecture diagrams.
+*   **Diagrams**: Mermaid is the only permitted diagram tool. PlantUML is PROHIBITED.
 *   **Principles**: Follow the project constitution strictly (Simplicity, Library-First).
+
+## Diagram Strategy
+
+Mermaid is the only permitted diagram format. PlantUML is PROHIBITED in all plan artifacts.
+
+| Diagram Type | Trigger Condition | Obligation |
+|---|---|---|
+| `sequenceDiagram` | Cross-component or cross-service calls detected | MUST |
+| `erDiagram` | `data-model.md` defines persistent entities with relationships | MUST |
+| `stateDiagram-v2` | Entity has enumerated state field with defined transitions | MUST |
+| `flowchart` | 3 or more conditional decision paths in user flows | SHOULD |
+| `classDiagram` | OO inheritance or composition relationships between domain classes | SHOULD |
+
+Quality standards: all actors/entities must be included; use fenced \`\`\`mermaid blocks only.
