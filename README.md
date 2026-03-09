@@ -133,6 +133,14 @@ Use **`/speckit.implement`** to execute all tasks and build your feature accordi
 /speckit.implement
 ```
 
+### 7. Converge documentation
+
+Use **`/speckit.converge`** to finalize the feature by updating documentation, ADRs, and the system map.
+
+```bash
+/speckit.converge
+```
+
 For detailed step-by-step instructions, see our [comprehensive guide](./spec-driven.md).
 
 ## 📽️ Video Overview
@@ -264,6 +272,7 @@ Essential commands for the Spec-Driven Development workflow:
 | `/speckit.plan`         | Create technical implementation plans with your chosen tech stack        |
 | `/speckit.tasks`        | Generate actionable task lists for implementation                        |
 | `/speckit.implement`    | Execute all tasks to build the feature according to the plan             |
+| `/speckit.converge`     | Finalize the feature — update ADRs, system map, and close documentation gaps |
 
 #### Optional Commands
 
@@ -419,7 +428,7 @@ Go to the project folder and run your AI agent. In our example, we're using `cla
 
 ![Bootstrapping Claude Code environment](./media/bootstrap-claude-code.gif)
 
-You will know that things are configured correctly if you see the `/speckit.constitution`, `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, and `/speckit.implement` commands available.
+You will know that things are configured correctly if you see the `/speckit.constitution`, `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, `/speckit.implement`, and `/speckit.converge` commands available.
 
 The first step should be establishing your project's governing principles using the `/speckit.constitution` command. This helps ensure consistent decision-making throughout all subsequent development phases:
 
@@ -638,6 +647,24 @@ The `/speckit.implement` command will:
 > The AI agent will execute local CLI commands (such as `dotnet`, `npm`, etc.) - make sure you have the required tools installed on your machine.
 
 Once the implementation is complete, test the application and resolve any runtime errors that may not be visible in CLI logs (e.g., browser console errors). You can copy and paste such errors back to your AI agent for resolution.
+
+### **STEP 8:** Converge documentation
+
+Once implementation is verified, use the `/speckit.converge` command to complete the feature by updating all documentation, ADRs, and the system map:
+
+```text
+/speckit.converge
+```
+
+The `/speckit.converge` command will:
+
+- Locate all Phase N tasks below the `<!-- CONVERGENCE_BOUNDARY -->` in `tasks.md`
+- Verify that all implementation tasks (Phases 1 through N-1) are complete before proceeding
+- Execute documentation convergence tasks: updating ADRs, synchronizing the System Map, and closing every gap identified in the plan's Documentation State Matrix
+- Mark each convergence task as complete upon execution
+
+> [!NOTE]
+> Convergence is a mandatory, non-skippable phase. `/speckit.implement` enforces a hard stop at the `CONVERGENCE_BOUNDARY` — only `/speckit.converge` can execute Phase N tasks.
 
 </details>
 
