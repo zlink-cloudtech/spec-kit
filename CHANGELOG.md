@@ -6,6 +6,16 @@ All notable changes to this project from commit 9111699cd27879e3e6301651a03e502e
 > The original `CHANGELOG.md` has been renamed to `CHANGELOG.md.origin`.
 > The original `README.md` has been renamed to `README.md.origin`.
 
+## [2.9.0] - 2026-03-09
+
+### Added
+
+- implement Mermaid-only diagram standard and associated scripts for UML generation
+
+### Documentation
+
+- fix lints
+
 ## [2.5.1] - 2026-03-06
 
 ### Fixed
