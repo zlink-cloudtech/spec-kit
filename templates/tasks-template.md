@@ -261,6 +261,25 @@ With multiple developers:
 
 **⚠️ REQUIRED**: This phase ensures feature artifacts are merged back into system documentation
 
+<!--
+  SPECS/ DISTILLATION RULE (MANDATORY):
+  
+  The `specs/` directory contains transient AI Agent work products (spec.md, plan.md, tasks.md,
+  data-model.md, etc.). These are INPUTS for knowledge distillation — NOT outputs to be indexed.
+
+  Phase N tasks MUST:
+  - Extract knowledge from specs/ artifacts and write it into permanent project documentation
+    (ADRs, architecture docs, API guides, configuration guides, etc.)
+  - Reference only those resulting permanent documents in memory/system-map.md
+
+  Phase N tasks MUST NOT:
+  - Add any specs/ file paths as entries in memory/system-map.md
+  - Leave direct links or references to specs/ files in system-map.md
+
+  If memory/system-map.md already contains entries pointing into specs/, include a task to
+  aggregate that content into proper permanent docs and remove the specs/ references from the map.
+-->
+
 ### Documentation Updates
 
 <!--
@@ -279,9 +298,11 @@ With multiple developers:
 **System Map Synchronization**:
 - [ ] TN06 [Skill: speckit-librarian] Update memory/system-map.md:
   - Change artifact status from "⚠️ Missing" to "✅ Active"
-  - Add locations for newly created documents
+  - Add locations for newly created **permanent** documents (docs/, ADRs, guides — never specs/)
   - Record "Last Updated" timestamps
   - Add descriptions of new artifacts
+  - **Remove any existing entries that point into `specs/`** — if found, distill their content
+    into a proper permanent document first, then replace the specs/ reference with that document
 
 ### Bootstrapping (Gap Closure)
 
@@ -302,6 +323,7 @@ With multiple developers:
 **Documentation Completeness**:
 - [ ] TN11 Verify all changes from "Documentation State Matrix" are complete
 - [ ] TN12 Ensure System Map accurately reflects current system state
+- [ ] TN13 [Skill: speckit-librarian] Confirm memory/system-map.md contains no entries referencing specs/ paths
 
 ---
 
