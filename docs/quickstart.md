@@ -64,6 +64,19 @@ uvx --from git+https://github.com/zlink-cloudtech/spec-kit.git specify init <PRO
 /speckit.plan The application uses Vite with minimal number of libraries. Use vanilla HTML, CSS, and JavaScript as much as possible. Images are not uploaded anywhere and metadata is stored in a local SQLite database.
 ```
 
+> [!NOTE]
+> **Automatic UML Diagrams**: The `speckit-architect` skill automatically generates Mermaid diagram artifacts during the plan phase when trigger conditions are met. All diagrams use Mermaid.js (PlantUML is not used):
+>
+> | Trigger Condition | Generated Artifact | Diagram Type |
+> |---|---|---|
+> | Two or more components exchange calls | `specs/###/uml/sequence.md` | `sequenceDiagram` |
+> | Persistent entities with relationships in `data-model.md` | Embedded block at end of `data-model.md` | `erDiagram` |
+> | Entity with enumerated state field and transitions | Embedded block in `data-model.md` (after `erDiagram`) | `stateDiagram-v2` |
+> | 3+ conditional decision paths in user flows | `specs/###/uml/flow.md` | `flowchart` |
+> | OO inheritance/composition between domain classes | `specs/###/uml/class-diagram.md` | `classDiagram` |
+>
+> These are automatically produced — no manual diagram authoring is required.
+
 ### Step 6: Break Down and Implement
 
 **In the chat**, use the `/speckit.tasks` slash command to create an actionable task list.

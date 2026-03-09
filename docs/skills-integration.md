@@ -324,6 +324,37 @@ The system is designed for extension:
 
 ---
 
-**Last Updated**: 2026-02-13  
+## Diagram Strategy in speckit-architect
+
+The `speckit-architect` skill (`skills/speckit-architect/SKILL.md`) includes a `## Diagram Strategy` section that establishes the Mermaid-only standard for all plan-phase diagram outputs.
+
+### Mermaid-Only Standard
+
+**Mermaid.js is the sole permitted diagram tool for all SpecKit-generated plan artifacts. PlantUML is PROHIBITED.** This is an architectural decision recorded in [ADR-0005](adr/0005-mermaid-only-diagram-standard.md).
+
+### Diagram Trigger Rules
+
+The `speckit-adapter.yaml` plan hook encodes one trigger rule per diagram type. When a trigger condition is met during the plan phase, the agent MUST or SHOULD produce the corresponding artifact:
+
+| Diagram Type | Trigger Condition | Obligation | Output Target |
+|---|---|---|---|
+| `sequenceDiagram` | Two or more named components exchange calls | MUST | `uml/sequence.md` |
+| `erDiagram` | `data-model.md` defines persistent entities with relationships | MUST | embedded in `data-model.md` |
+| `stateDiagram-v2` | Entity has enumerated state field with defined transitions | MUST | embedded in `data-model.md` (after `erDiagram`) |
+| `flowchart` | 3+ conditional decision paths in user flows | SHOULD | `uml/flow.md` |
+| `classDiagram` | OO inheritance or composition between domain classes | SHOULD | `uml/class-diagram.md` |
+
+### UML Directory Initialisation
+
+Before writing any `uml/*.md` file, the agent runs:
+
+- **Bash**: `scripts/bash/setup-uml-dir.sh` (or pass feature dir as `$1`)
+- **PowerShell**: `scripts/powershell/setup-uml-dir.ps1 -FeatureDir <path>`
+
+Both scripts are idempotent: they create `specs/###/uml/` if it does not exist and print its absolute path to stdout. The adapter instruction selects the correct script based on execution environment.
+
+---
+
+**Last Updated**: 2026-03-07  
 **Version**: 2.0.0  
 **Maintainer**: SpecKit Core Team

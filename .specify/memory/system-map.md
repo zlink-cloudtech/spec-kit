@@ -3,7 +3,7 @@
 **Purpose**: Centralized index of all authoritative documentation for the project. Enables AI agents to quickly locate relevant context without scanning the entire codebase.
 
 **Template Version**: 2.0.0
-**Version**: 1.0.0 | **Created**: 2026-03-03 | **Last Updated**: 2026-03-05
+**Version**: 1.0.0 | **Created**: 2026-03-03 | **Last Updated**: 2026-03-07
 **Maintained By**: Spec Kit Maintainers
 **Review Frequency**: After each major feature completion
 
@@ -46,8 +46,8 @@ teams through a structured, specification-first approach to building software.
 | Component | Location | Technology | Purpose |
 |-----------|----------|------------|---------|
 | Specify CLI | `src/specify_cli/` | Python / Typer | Bootstrap projects for SDD; `init`, `check`, `version` commands |
-| Bash Scripts | `scripts/bash/` | Bash | Feature creation, context update, skill generation |
-| PowerShell Scripts | `scripts/powershell/` | PowerShell | Cross-platform equivalents of all bash scripts |
+| Bash Scripts | `scripts/bash/` | Bash | Feature creation, context update, skill generation; includes `setup-uml-dir.sh` for UML directory initialisation |
+| PowerShell Scripts | `scripts/powershell/` | PowerShell | Cross-platform equivalents of all bash scripts; includes `setup-uml-dir.ps1` for UML directory initialisation |
 | Templates | `templates/` | Markdown / YAML | Command, instruction, and document templates |
 | Skills | `skills/` | Markdown | AI agent skill personas (architect, developer, tech-lead, etc.) |
 | Release Server | `release-server/` | Python / FastAPI / Docker | Package hosting and release management |
@@ -78,7 +78,9 @@ Add rows that are relevant; remove or leave empty categories that don't apply.
 
 | Artifact | Location | Status | Last Updated | Description |
 |----------|----------|--------|--------------|-------------|
-| Agent Integration Guide | `AGENTS.md` | ✅ Active | 2026-03-03 | Full project architecture, agent onboarding, and skill creation guide |
+| Agent Integration Guide | `AGENTS.md` | ✅ Active | 2026-03-07 | Full project architecture, agent onboarding, and skill creation guide; includes Bash/PowerShell Scripts Reference table with `setup-uml-dir.sh` / `setup-uml-dir.ps1` |
+| UML Directory Script (Bash) | `scripts/bash/setup-uml-dir.sh` | ✅ Active | 2026-03-07 | Idempotent script that creates `specs/###/uml/` and prints its absolute path; used by speckit-architect adapter plan hook |
+| UML Directory Script (PowerShell) | `scripts/powershell/setup-uml-dir.ps1` | ✅ Active | 2026-03-07 | PowerShell equivalent of `setup-uml-dir.sh`; accepts `-FeatureDir` param or `$env:FEATURE_DIR` |
 | SDD Methodology | `spec-driven.md` | ✅ Active | 2026-03-03 | Comprehensive Spec-Driven Development philosophy and workflow |
 | MCP Helm Chart | `mcp/chart/` | ✅ Active | 2026-03-03 | Helm chart for MCP server deployment |
 | Release Server Chart | `release-server/chart/` | ✅ Active | 2026-03-03 | Helm chart for release server deployment |
@@ -96,7 +98,7 @@ Add rows that are relevant; remove or leave empty categories that don't apply.
 
 | Artifact | Location | Status | Last Updated | Description |
 |----------|----------|--------|--------------|-------------|
-| CLI Tests | `tests/` | ✅ Active | 2026-03-05 | pytest suite for Specify CLI and skill resolver; includes `tests/test_init.py` (24 tests for `ensure_system_map_from_template`, `ensure_speckit_config_from_template`, and `init` integration) and `tests/test_resolve_skills.py` |
+| CLI Tests | `tests/` | ✅ Active | 2026-03-07 | pytest suite for Specify CLI and skill resolver; includes `tests/test_init.py`, `tests/test_resolve_skills.py`, `tests/test_setup_uml_dir.py` (UML directory script tests), and `tests/test_skill_diagram_strategy.py` (speckit-architect SKILL.md and adapter diagram rule tests) |
 | Release Server Tests | `release-server/tests/` | ✅ Active | 2026-03-03 | API, auth, contract, and storage tests for release server |
 | MCP Server Tests | `mcp/tests/` | ✅ Active | 2026-03-03 | Prompt and integration tests for MCP server |
 
@@ -122,6 +124,7 @@ Add rows that are relevant; remove or leave empty categories that don't apply.
 | ADR-0002 | `docs/adr/0002-oci-chart-publishing-ghcr.md` | ✅ Active | 2026-03-03 | OCI chart publishing to GHCR |
 | ADR-0003 | `docs/adr/0003-gateway-api-httproute-support.md` | ✅ Active | 2026-03-03 | Gateway API HTTPRoute support |
 | ADR-0004 | `docs/adr/0004-version-synchronization-strategy.md` | ✅ Active | 2026-03-03 | Version synchronization strategy |
+| ADR-0005 | `docs/adr/0005-mermaid-only-diagram-standard.md` | ✅ Active | 2026-03-07 | Mermaid-only diagram standard (PlantUML PROHIBITED); five UML trigger rules for plan phase |
 
 ---
 
