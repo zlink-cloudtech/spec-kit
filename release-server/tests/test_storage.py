@@ -60,7 +60,7 @@ async def test_delete_non_existent_package(storage_service):
     # Should probably not raise an error, or raise FileNotFoundError
     # Let's assume idempotency (no error if missing) based on "delete" semantics usually
     # Or strict deletion.
-    # T005 task doesn't specify. I'll assume idempotency for now, or check implementation details.
+    # Delete semantics are unspecified. I'll assume idempotency for now, or check implementation details.
     # Let's implementation raise FileNotFoundError so caller can decide (404).
     with pytest.raises(FileNotFoundError):
         await storage_service.delete_package("missing.zip")

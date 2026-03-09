@@ -110,7 +110,7 @@ def _fake_download_and_extract(
 
 
 # ===========================================================================
-# Phase 3 — US1: System Map happy path (T004-T008)
+# Phase 3 — US1: System Map happy path
 # ===========================================================================
 
 
@@ -169,7 +169,7 @@ def test_system_map_tracker_add_called_first(tmp_path):
 
 
 # ===========================================================================
-# Phase 4 — US2: System Map skip/idempotent (T010-T012)
+# Phase 4 — US2: System Map skip/idempotent
 # ===========================================================================
 
 
@@ -212,7 +212,7 @@ def test_system_map_skip_preserves_custom_content(tmp_path):
 
 
 # ===========================================================================
-# Phase 5 — US3: System Map missing-template and IO-error (T014-T017)
+# Phase 5 — US3: System Map missing-template and IO-error
 # ===========================================================================
 
 
@@ -257,7 +257,7 @@ def test_system_map_io_error_without_tracker(tmp_path, capsys):
 
 
 # ===========================================================================
-# Phase 6 — US4: SpecKit Config — full mirror (T021-T030)
+# Phase 6 — US4: SpecKit Config — full mirror
 # ===========================================================================
 
 
@@ -369,7 +369,7 @@ def test_speckit_config_tracker_add_called_first(tmp_path):
 
 
 # ===========================================================================
-# Phase 7 — Integration: init() orchestrates both helpers (T034-T035)
+# Phase 7 — Integration: init() orchestrates both helpers
 # ===========================================================================
 
 

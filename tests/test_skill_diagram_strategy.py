@@ -1,12 +1,5 @@
 """
 Tests for skills/speckit-architect/SKILL.md and speckit-adapter.yaml diagram strategy.
-
-T008: test_skill_md_structure — SKILL.md frontmatter + Diagram Strategy section
-T012: test_adapter_sequence_rule — adapter plan hook contains sequence diagram trigger
-T015: test_adapter_er_diagram_rule — adapter plan hook contains ER diagram trigger
-T018: test_adapter_state_diagram_rule — adapter plan hook contains state diagram trigger
-T021: test_adapter_flowchart_rule — adapter plan hook contains flowchart trigger
-T024: test_adapter_class_diagram_rule — adapter plan hook contains class diagram trigger
 """
 import re
 from pathlib import Path
@@ -66,12 +59,12 @@ def _get_adapter_plan_instructions() -> str:
 
 
 # ---------------------------------------------------------------------------
-# T008 — SKILL.md structure
+# SKILL.md structure
 # ---------------------------------------------------------------------------
 
 
 def test_skill_md_structure():
-    """T008: SKILL.md has valid frontmatter and Diagram Strategy section (SC-007)."""
+    """SKILL.md has valid frontmatter and Diagram Strategy section."""
     fm, body = _parse_skill_md(SKILL_MD)
 
     # Frontmatter checks
@@ -107,12 +100,12 @@ def test_skill_md_structure():
 
 
 # ---------------------------------------------------------------------------
-# T012 — Adapter: sequence diagram trigger rule
+# Adapter: sequence diagram trigger rule
 # ---------------------------------------------------------------------------
 
 
 def test_adapter_sequence_rule():
-    """T012: adapter plan hook contains sequence diagram trigger rule (SC-005)."""
+    """Adapter plan hook contains sequence diagram trigger rule."""
     instructions = _get_adapter_plan_instructions()
 
     assert "setup-uml-dir" in instructions, (
@@ -139,12 +132,12 @@ def test_adapter_sequence_rule():
 
 
 # ---------------------------------------------------------------------------
-# T015 — Adapter: ER diagram trigger rule
+# Adapter: ER diagram trigger rule
 # ---------------------------------------------------------------------------
 
 
 def test_adapter_er_diagram_rule():
-    """T015: adapter plan hook contains ER diagram trigger rule (SC-005)."""
+    """Adapter plan hook contains ER diagram trigger rule."""
     instructions = _get_adapter_plan_instructions()
 
     assert "erDiagram" in instructions, (
@@ -169,12 +162,12 @@ def test_adapter_er_diagram_rule():
 
 
 # ---------------------------------------------------------------------------
-# T018 — Adapter: state diagram trigger rule
+# Adapter: state diagram trigger rule
 # ---------------------------------------------------------------------------
 
 
 def test_adapter_state_diagram_rule():
-    """T018: adapter plan hook contains state machine trigger rule."""
+    """Adapter plan hook contains state machine trigger rule."""
     instructions = _get_adapter_plan_instructions()
 
     assert "stateDiagram-v2" in instructions, (
@@ -192,12 +185,12 @@ def test_adapter_state_diagram_rule():
 
 
 # ---------------------------------------------------------------------------
-# T021 — Adapter: flowchart trigger rule
+# Adapter: flowchart trigger rule
 # ---------------------------------------------------------------------------
 
 
 def test_adapter_flowchart_rule():
-    """T021: adapter plan hook contains flowchart trigger rule."""
+    """Adapter plan hook contains flowchart trigger rule."""
     instructions = _get_adapter_plan_instructions()
 
     assert "flowchart" in instructions, (
@@ -215,12 +208,12 @@ def test_adapter_flowchart_rule():
 
 
 # ---------------------------------------------------------------------------
-# T024 — Adapter: class diagram trigger rule
+# Adapter: class diagram trigger rule
 # ---------------------------------------------------------------------------
 
 
 def test_adapter_class_diagram_rule():
-    """T024: adapter plan hook contains class diagram trigger rule."""
+    """Adapter plan hook contains class diagram trigger rule."""
     instructions = _get_adapter_plan_instructions()
 
     assert "classDiagram" in instructions, (

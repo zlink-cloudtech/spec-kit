@@ -1,8 +1,5 @@
 """
 Tests for scripts/bash/setup-uml-dir.sh and scripts/powershell/setup-uml-dir.ps1
-
-T002: Bash script tests — 4 scenarios
-T003: PowerShell script tests — 4 scenarios (skipped if pwsh unavailable)
 """
 import os
 import shutil
@@ -18,12 +15,13 @@ PWSH_AVAILABLE = shutil.which("pwsh") is not None
 
 
 # ---------------------------------------------------------------------------
-# T002 — Bash: scripts/bash/setup-uml-dir.sh
+# ---------------------------------------------------------------------------
+# Bash: scripts/bash/setup-uml-dir.sh
 # ---------------------------------------------------------------------------
 
 
 class TestSetupUmlDirBash:
-    """Tests for setup-uml-dir.sh (T002)."""
+    """Tests for setup-uml-dir.sh."""
 
     def test_happy_path_env_var(self, tmp_path):
         """(a) FEATURE_DIR env var set → exits 0, prints absolute uml/ path, dir created."""
@@ -119,13 +117,13 @@ class TestSetupUmlDirBash:
 
 
 # ---------------------------------------------------------------------------
-# T003 — PowerShell: scripts/powershell/setup-uml-dir.ps1
+# PowerShell: scripts/powershell/setup-uml-dir.ps1
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.skipif(not PWSH_AVAILABLE, reason="pwsh not available")
 class TestSetupUmlDirPowerShell:
-    """Tests for setup-uml-dir.ps1 (T003)."""
+    """Tests for setup-uml-dir.ps1."""
 
     def test_happy_path_env_var(self, tmp_path):
         """(a) $env:FEATURE_DIR set → exits 0, prints absolute uml/ path, dir created."""

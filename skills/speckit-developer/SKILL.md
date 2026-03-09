@@ -35,4 +35,4 @@ When implementing a task, you strictly follow this cycle:
 
 When breaking down tasks:
 *   Ensure every implementation task is preceded by a corresponding testing task.
-*   Group them: T001 (Test) -> T002 (Impl).
+*   Group them: Test task → Implementation task.
