@@ -57,6 +57,13 @@ You **MUST** consider the user input before proceeding (if not empty).
        - System Map synchronization task
        - ADR creation tasks (if architectural decisions were made)
      - Label all Phase N tasks with `[Skill: speckit-librarian]`
+     - **⚠️ `specs/` distillation rule**: Phase N tasks MUST distill `specs/` content into
+       permanent project documentation (ADRs, architecture docs, guides, etc.). Tasks MUST NOT
+       instruct adding `specs/` file paths to `memory/system-map.md` — the system map indexes
+       only permanent, human-readable documentation, not transient AI Agent work products stored
+       under `specs/`. If `memory/system-map.md` already contains entries pointing into `specs/`,
+       generate an explicit task to aggregate that content into proper project docs and then remove
+       the `specs/` references from the map.
    - Validate task completeness (each user story has all needed tasks, independently testable)
 
 5. **Generate tasks.md**: Use `templates/tasks-template.md` as structure, fill with:
