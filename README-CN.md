@@ -132,6 +132,14 @@ uvx --from git+https://github.com/zlink-cloudtech/spec-kit.git specify init <PRO
 /speckit.implement
 ```
 
+### 7. 收敛文档
+
+使用 **`/speckit.converge`** 通过更新文档、ADR 和系统地图来完成功能。
+
+```bash
+/speckit.converge
+```
+
 有关详细的分步说明，请参阅我们的[综合指南](./spec-driven.md)。
 
 ## 📽️ 视频概述
@@ -263,6 +271,7 @@ Spec-Driven Development 工作流程的基本命令：
 | `/speckit.plan`         | 使用您选择的技术栈创建技术实现计划        |
 | `/speckit.tasks`        | 为实现生成可操作的任务列表                        |
 | `/speckit.implement`    | 根据计划执行所有任务以构建功能             |
+| `/speckit.converge`     | 完成功能——更新 ADR、系统地图并关闭文档差距 |
 
 #### 可选命令
 
@@ -399,7 +408,7 @@ specify init <project_name> --ai claude --ignore-agent-tools
 
 ![引导 Claude Code 环境](./media/bootstrap-claude-code.gif)
 
-如果您看到 `/speckit.constitution`、`/speckit.specify`、`/speckit.plan`、`/speckit.tasks` 和 `/speckit.implement` 命令可用，则表示配置正确。
+如果您看到 `/speckit.constitution`、`/speckit.specify`、`/speckit.plan`、`/speckit.tasks`、`/speckit.implement` 和 `/speckit.converge` 命令可用，则表示配置正确。
 
 第一步应该是使用 `/speckit.constitution` 命令建立项目的治理原则。这有助于确保在所有后续开发阶段中保持一致的决策：
 
@@ -618,6 +627,24 @@ details where it can find the information as it walks through each step in the c
 > AI 代理将执行本地 CLI 命令（如 `dotnet`、`npm` 等） - 确保您的机器上安装了所需工具。
 
 实施完成后，测试应用程序并解决 CLI 日志中不可见的任何运行时错误（例如，浏览器控制台错误）。您可以将此类错误复制并粘贴回您的 AI 代理以解决。
+
+### **步骤 8：** 收敛文档
+
+验证实施后，使用 `/speckit.converge` 命令通过更新所有文档、ADR 和系统地图来完成功能：
+
+```text
+/speckit.converge
+```
+
+`/speckit.converge` 命令将：
+
+- 在 `tasks.md` 中的 `<!-- CONVERGENCE_BOUNDARY -->` 下方找到所有第 N 阶段任务
+- 在继续之前验证所有实施任务（第 1 至 N-1 阶段）已完成
+- 执行文档收敛任务：更新 ADR、同步系统地图，并关闭计划文档状态矩阵中确定的每个差距
+- 执行后将每个收敛任务标记为完成
+
+> [!NOTE]
+> 收敛是强制性的、不可跳过的阶段。`/speckit.implement` 在 `CONVERGENCE_BOUNDARY` 处强制硬停止——只有 `/speckit.converge` 可以执行第 N 阶段任务。
 
 </details>
 
