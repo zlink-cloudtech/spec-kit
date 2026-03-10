@@ -67,6 +67,10 @@ Load only the minimal necessary context from each artifact:
 
 - Load `/memory/constitution.md` for principle validation
 
+**From system map:**
+
+- Load `/memory/system-map.md` (if it exists) for structure and reference validation
+
 **From active skills:**
 
 - Identify used skills from `spec.md` ("Linked Skills") or `plan.md` ("Skill Alignment Strategy")
@@ -138,6 +142,34 @@ Focus on high-signal findings. Limit to 50 findings total; aggregate remainder i
 - Flag any Documentation State Matrix entry without a Phase N task as **CRITICAL**
 - Flag any Gap Analysis entry without a bootstrapping task as **HIGH**
 - Flag missing CONVERGENCE_BOUNDARY marker as **HIGH** (implement command cannot enforce boundary)
+
+#### H. System Map Validation
+
+Read `memory/system-map.md` if it exists; if the file is absent, flag as **CRITICAL** and skip sub-checks.
+
+**Structure Integrity** — Verify every required section heading is present:
+
+- `# System Map` (H1 title)
+- `## Project Identity`
+- `## Essential Artifacts`
+- `### 🏛️ Architecture & Design`
+- `### 📐 Configuration & Infrastructure`
+- `### 🧪 Quality & Testing`
+- `### 🧭 Project Memory`
+- `### 📚 Decisions & Standards`
+- `## Integration Points`
+- `## Knowledge Sources`
+- `## Using the System Map`
+- `## Maintenance Protocol`
+- `## Bootstrap Checklist`
+
+Flag each missing required section as **HIGH**. Flag a missing H1 title (`# System Map`) as **CRITICAL** (document is unrecognisable as a system map).
+
+**Forbidden Reference Check** — Scan every Location column value across all artifact tables in the system map:
+
+- Flag any Location that starts with `specs/`, `./specs/`, `../specs/`, or `specs\` as **CRITICAL**
+- The `specs/` directory holds transient development artifacts (feature specs, plans, tasks). Their knowledge must be distilled into permanent documentation during the Converge phase; only those resulting permanent documents belong in the system map.
+- Report the full artifact row (Artifact name + Location value) for each violation to make remediation straightforward.
 
 ### 5. Severity Assignment
 
