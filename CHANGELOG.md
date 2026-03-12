@@ -6,6 +6,12 @@ All notable changes to this project from commit 9111699cd27879e3e6301651a03e502e
 > The original `CHANGELOG.md` has been renamed to `CHANGELOG.md.origin`.
 > The original `README.md` has been renamed to `README.md.origin`.
 
+## [2.10.2] - 2026-03-12
+
+### Changed
+
+- remove legacy UML setup scripts and update documentation for diagram initialization (#20)
+
 ## [2.10.0] - 2026-03-10
 
 ### Added
