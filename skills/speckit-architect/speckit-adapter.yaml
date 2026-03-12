@@ -10,35 +10,11 @@ hooks:
       - Run Gap Analysis against system-map.md Essential Artifacts list
       - Add Bootstrapping Tasks for any missing essential artifacts
 
-      ## UML Diagram Rules
+      ## Diagrams
 
-      Mermaid is the ONLY permitted diagram tool. PlantUML is PROHIBITED in all plan artifacts.
+      Apply the **Diagram Matrix** in SKILL.md (`## Diagram Matrix`) to decide which diagrams to
+      create. Evaluate each trigger condition against the current feature spec.
 
-      Run `scripts/bash/setup-uml-dir.sh` (PowerShell: `scripts/powershell/setup-uml-dir.ps1`)
-      from the repo root to initialize the `uml/` directory; use the returned absolute path for
-      all `uml/` output files below.
-      All diagram blocks MUST be wrapped in fenced ```mermaid code blocks (FR-011).
-
-      ### Trigger Rules
-
-      1. **Sequence Diagram** (cross-component / cross-service): If the feature involves
-         cross-component or cross-service calls, you MUST create `uml/sequence.md` containing
-         a `sequenceDiagram` block that lists all participants and interactions.
-
-      2. **ER Diagram** (persistent entities): If `data-model.md` defines persistent entities
-         with relationships, you MUST embed an `erDiagram` Mermaid block at the end of
-         `data-model.md`. When both ER and state diagram triggers apply, the `erDiagram` block
-         MUST appear first.
-
-      3. **State Diagram** (state transitions): If `data-model.md` contains an entity with an
-         enumerated state field and defined transitions, you MUST embed a `stateDiagram-v2`
-         Mermaid block at the end of `data-model.md` (after any `erDiagram` block).
-
-      4. **Flowchart** (decision paths): If the feature has 3 or more conditional decision
-         paths in user flows, you SHOULD create `uml/flow.md` containing a `flowchart` diagram
-         covering all decision nodes and outcomes.
-
-      5. **Class Diagram** (OO relationships): If the feature introduces OO inheritance or
-         composition relationships between domain classes, you SHOULD create
-         `uml/class-diagram.md` containing a `classDiagram` showing all hierarchies and
-         relationships.
+      `$FEATURE_DIR` is the absolute path to the feature's spec directory — obtain it from
+      `check-prerequisites --json` output. Pass it to the initialization scripts documented in
+      SKILL.md (`## Scripts`) before writing any diagram file.
