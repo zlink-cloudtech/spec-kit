@@ -3,7 +3,7 @@
 **Purpose**: Centralized index of all authoritative documentation for the project. Enables AI agents to quickly locate relevant context without scanning the entire codebase.
 
 **Template Version**: 2.0.0
-**Version**: 1.0.0 | **Created**: 2026-03-03 | **Last Updated**: 2026-03-07
+**Version**: 1.0.0 | **Created**: 2026-03-03 | **Last Updated**: 2026-03-13
 **Maintained By**: Spec Kit Maintainers
 **Review Frequency**: After each major feature completion
 
@@ -81,9 +81,12 @@ Add rows that are relevant; remove or leave empty categories that don't apply.
 | Agent Integration Guide | `AGENTS.md` | ✅ Active | 2026-03-07 | Full project architecture, agent onboarding, and skill creation guide; includes Bash/PowerShell Scripts Reference table with `setup-uml-dir.sh` / `setup-uml-dir.ps1` |
 | UML Directory Script (Bash) | `scripts/bash/setup-uml-dir.sh` | ✅ Active | 2026-03-07 | Idempotent script that creates `specs/###/uml/` and prints its absolute path; used by speckit-architect adapter plan hook |
 | UML Directory Script (PowerShell) | `scripts/powershell/setup-uml-dir.ps1` | ✅ Active | 2026-03-07 | PowerShell equivalent of `setup-uml-dir.sh`; accepts `-FeatureDir` param or `$env:FEATURE_DIR` |
-| SDD Methodology | `spec-driven.md` | ✅ Active | 2026-03-03 | Comprehensive Spec-Driven Development philosophy and workflow |
+| SDD Methodology | `spec-driven.md` | ✅ Active | 2026-03-13 | Comprehensive Spec-Driven Development philosophy and workflow |
 | MCP Helm Chart | `mcp/chart/` | ✅ Active | 2026-03-03 | Helm chart for MCP server deployment |
 | Release Server Chart | `release-server/chart/` | ✅ Active | 2026-03-03 | Helm chart for release server deployment |
+| Doc-Update Command Template | `templates/commands/doc-update.md` | ✅ Active | 2026-03-13 | Standalone `/speckit.doc-update` command template; auto-distributed to all agents via `generate_commands()` in release script |
+| speckit-doc-updater Skill | `skills/speckit-doc-updater/SKILL.md` | ✅ Active | 2026-03-13 | Agent persona for lifecycle-independent documentation management; supports 6 operations (update, add, delete, deprecate, rename/move, merge, reposition) with hard-stop rule on missing system-map |
+| speckit-doc-updater Adapter | `skills/speckit-doc-updater/speckit-adapter.yaml` | ✅ Active | 2026-03-13 | Phase hook registration for `doc-update` phase at priority 100; invocable via `python3 scripts/resolve-skills.py doc-update .` |
 
 ### 📐 Configuration & Infrastructure
 
@@ -98,7 +101,7 @@ Add rows that are relevant; remove or leave empty categories that don't apply.
 
 | Artifact | Location | Status | Last Updated | Description |
 |----------|----------|--------|--------------|-------------|
-| CLI Tests | `tests/` | ✅ Active | 2026-03-07 | pytest suite for Specify CLI and skill resolver; includes `tests/test_init.py`, `tests/test_resolve_skills.py`, `tests/test_setup_uml_dir.py` (UML directory script tests), and `tests/test_skill_diagram_strategy.py` (speckit-architect SKILL.md and adapter diagram rule tests) |
+| CLI Tests | `tests/` | ✅ Active | 2026-03-13 | pytest suite for Specify CLI and skill resolver; includes `tests/test_init.py`, `tests/test_resolve_skills.py`, `tests/test_setup_uml_dir.py` (UML directory script tests), `tests/test_skill_diagram_strategy.py` (speckit-architect SKILL.md and adapter diagram rule tests), and `tests/test_doc_update_command.py` (doc-update command template, skill adapter, and CLI banner tests) |
 | Release Server Tests | `release-server/tests/` | ✅ Active | 2026-03-03 | API, auth, contract, and storage tests for release server |
 | MCP Server Tests | `mcp/tests/` | ✅ Active | 2026-03-03 | Prompt and integration tests for MCP server |
 
@@ -125,6 +128,7 @@ Add rows that are relevant; remove or leave empty categories that don't apply.
 | ADR-0003 | `docs/adr/0003-gateway-api-httproute-support.md` | ✅ Active | 2026-03-03 | Gateway API HTTPRoute support |
 | ADR-0004 | `docs/adr/0004-version-synchronization-strategy.md` | ✅ Active | 2026-03-03 | Version synchronization strategy |
 | ADR-0005 | `docs/adr/0005-mermaid-only-diagram-standard.md` | ✅ Active | 2026-03-07 | Mermaid-only diagram standard (PlantUML PROHIBITED); five UML trigger rules for plan phase |
+| ADR-0006 | `docs/adr/0006-standalone-doc-management-agent.md` | ✅ Active | 2026-03-13 | Decision to create a lifecycle-independent `/speckit.doc-update` command and `speckit-doc-updater` skill rather than extending `speckit-librarian` |
 
 ---
 

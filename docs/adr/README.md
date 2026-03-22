@@ -19,6 +19,7 @@ ADRs are numbered sequentially: `0001`, `0002`, `0003`, etc. The number is never
 | [0003](0003-gateway-api-httproute-support.md) | Gateway API HTTPRoute Support with Mutual Exclusivity | Accepted | 2026-02-26 |
 | [0004](0004-version-synchronization-strategy.md) | Single-Version Synchronization Strategy | Accepted | 2026-02-26 |
 | [0005](0005-mermaid-only-diagram-standard.md) | Mermaid-Only Diagram Standard | Accepted | 2026-03-07 |
+| [0006](0006-standalone-doc-management-agent.md) | Standalone Documentation Management Agent | Accepted | 2026-03-13 |
 
 ## Template
 

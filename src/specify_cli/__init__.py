@@ -1413,6 +1413,7 @@ def init(
         f"○ [cyan]/speckit.analyze[/] [bright_black](optional)[/bright_black] - Cross-artifact consistency & alignment report [bright_black](after tasks, before implement)[/bright_black]",
         f"○ [cyan]/speckit.checklist[/] [bright_black](optional)[/bright_black] - Generate quality checklists for requirements validation [bright_black](after plan)[/bright_black]",
         f"○ [cyan]/speckit.taskstoissues[/] [bright_black](optional)[/bright_black] - Convert tasks into GitHub issues for team collaboration [bright_black](after tasks)[/bright_black]",
+        f"○ [cyan]/speckit.doc-update[/] [bright_black](standalone)[/bright_black] - Manage project documentation in sync with memory/system-map.md",
     ]
     enhancements_panel = Panel("\n".join(enhancement_lines), title="Enhancement Commands", border_style="cyan", padding=(1,2))
     console.print()

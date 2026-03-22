@@ -72,6 +72,7 @@ Specify → Clarify → Plan → Task → Implement → Converge
 | `/speckit.analyze` | Cross-artifact consistency check (after tasks, before implement) |
 | `/speckit.checklist` | Generate quality checklists for requirements validation |
 | `/speckit.taskstoissues` | Convert tasks into GitHub issues for team collaboration |
+| `/speckit.doc-update` | Manage project documentation in sync with `memory/system-map.md`; standalone utility, lifecycle-independent, invocable at any time |
 
 ### Branch Naming Convention
 
