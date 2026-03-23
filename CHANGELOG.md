@@ -6,6 +6,16 @@ All notable changes to this project from commit 9111699cd27879e3e6301651a03e502e
 > The original `CHANGELOG.md` has been renamed to `CHANGELOG.md.origin`.
 > The original `README.md` has been renamed to `README.md.origin`.
 
+## [2.11.0] - 2026-03-23
+
+### Added
+
+- add standalone documentation management agent and associated command template
+
+### Fixed
+
+- update skill name to speckit-architect for clarity
+
 ## [2.10.2] - 2026-03-12
 
 ### Changed
