@@ -94,6 +94,7 @@ hooks:
 | `tasks` | Task breakdown & decomposition | `speckit-tech-lead`, `speckit-developer` |
 | `implement` | Code implementation | `speckit-developer` |
 | `converge` | Documentation & system convergence | `speckit-librarian` |
+| `doc-update` | Standalone documentation management (lifecycle-independent) | `speckit-doc-updater` |
 
 ### Priority Behavior
 

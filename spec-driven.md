@@ -97,6 +97,7 @@ Spec-Driven Development in v2 is structured as a six-phase lifecycle. Each phase
 | `/speckit.analyze` | Cross-artifact consistency check — run after tasks, before implement |
 | `/speckit.checklist` | Generate quality checklists for requirements validation |
 | `/speckit.taskstoissues` | Convert tasks into GitHub issues for team collaboration |
+| `/speckit.doc-update` | Manage project documentation in sync with `memory/system-map.md` — standalone utility, lifecycle-independent, invocable at any time |
 
 ### The CONVERGENCE_BOUNDARY
 
