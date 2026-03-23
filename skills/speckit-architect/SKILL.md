@@ -1,5 +1,5 @@
 ---
-name: architect
+name: speckit-architect
 description: "Senior software architect for high-level design, ADR creation, architectural gap analysis, and C4/UML diagram generation. Use when designing features, reviewing architectural decisions, identifying missing documentation, or producing architecture diagrams. Framework-agnostic — works independently of any specific development workflow."
 ---
 
