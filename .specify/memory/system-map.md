@@ -46,8 +46,8 @@ teams through a structured, specification-first approach to building software.
 | Component | Location | Technology | Purpose |
 |-----------|----------|------------|---------|
 | Specify CLI | `src/specify_cli/` | Python / Typer | Bootstrap projects for SDD; `init`, `check`, `version` commands |
-| Bash Scripts | `scripts/bash/` | Bash | Feature creation, context update, skill generation; includes `setup-uml-dir.sh` for UML directory initialisation |
-| PowerShell Scripts | `scripts/powershell/` | PowerShell | Cross-platform equivalents of all bash scripts; includes `setup-uml-dir.ps1` for UML directory initialisation |
+| Bash Scripts | `scripts/bash/` | Bash | Feature creation, context update, skill generation |
+| PowerShell Scripts | `scripts/powershell/` | PowerShell | Cross-platform equivalents of all bash scripts |
 | Templates | `templates/` | Markdown / YAML | Command, instruction, and document templates |
 | Skills | `skills/` | Markdown | AI agent skill personas (architect, developer, tech-lead, etc.) |
 | Release Server | `release-server/` | Python / FastAPI / Docker | Package hosting and release management |
@@ -78,9 +78,7 @@ Add rows that are relevant; remove or leave empty categories that don't apply.
 
 | Artifact | Location | Status | Last Updated | Description |
 |----------|----------|--------|--------------|-------------|
-| Agent Integration Guide | `AGENTS.md` | ✅ Active | 2026-03-07 | Full project architecture, agent onboarding, and skill creation guide; includes Bash/PowerShell Scripts Reference table with `setup-uml-dir.sh` / `setup-uml-dir.ps1` |
-| UML Directory Script (Bash) | `scripts/bash/setup-uml-dir.sh` | ✅ Active | 2026-03-07 | Idempotent script that creates `specs/###/uml/` and prints its absolute path; used by speckit-architect adapter plan hook |
-| UML Directory Script (PowerShell) | `scripts/powershell/setup-uml-dir.ps1` | ✅ Active | 2026-03-07 | PowerShell equivalent of `setup-uml-dir.sh`; accepts `-FeatureDir` param or `$env:FEATURE_DIR` |
+| Agent Integration Guide | `AGENTS.md` | ✅ Active | 2026-03-28 | Full project architecture, agent onboarding, and skill creation guide |
 | SDD Methodology | `spec-driven.md` | ✅ Active | 2026-03-13 | Comprehensive Spec-Driven Development philosophy and workflow |
 | MCP Helm Chart | `mcp/chart/` | ✅ Active | 2026-03-03 | Helm chart for MCP server deployment |
 | Release Server Chart | `release-server/chart/` | ✅ Active | 2026-03-03 | Helm chart for release server deployment |

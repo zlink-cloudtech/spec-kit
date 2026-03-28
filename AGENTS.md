@@ -162,18 +162,9 @@ The following utility scripts are available for use in plan-phase agent workflow
 | Script (Bash) | Script (PowerShell) | Purpose | Interface | Idempotent |
 |---|---|---|---|---|
 | `scripts/bash/setup-plan.sh` | `scripts/powershell/setup-plan.ps1` | Initialise the `specs/###/` plan directory structure | `$1` or `$FEATURE_DIR` env var; prints absolute path to stdout | ✅ Yes |
-| `scripts/bash/setup-uml-dir.sh` | `scripts/powershell/setup-uml-dir.ps1` | Create `specs/###/uml/` subdirectory for UML diagram artifacts | `$1` or `$FEATURE_DIR` env var; exits 1 + stderr if neither set; prints resolved absolute `uml/` path to stdout | ✅ Yes |
 | `scripts/bash/check-prerequisites.sh` | `scripts/powershell/check-prerequisites.ps1` | Verify feature branch, locate FEATURE_DIR, list available docs | `--json` flag for machine-readable output; `--require-tasks`, `--include-tasks` options | ✅ Yes |
 | `scripts/bash/update-agent-context.sh` | `scripts/powershell/update-agent-context.ps1` | Inject active skills into agent context file for a given phase | `<agent> <phase>` args | ✅ Yes |
 | `scripts/bash/create-new-feature.sh` | `scripts/powershell/create-new-feature.ps1` | Create a new feature branch with `type/###-name` format | `--type <type>`, `--name <name>` | N/A (creates branch) |
-
-**`setup-uml-dir.sh` / `setup-uml-dir.ps1` — detailed interface**:
-
-- **Bash**: `scripts/bash/setup-uml-dir.sh [FEATURE_DIR]` — positional arg `$1` takes precedence over `$FEATURE_DIR` env var
-- **PowerShell**: `scripts/powershell/setup-uml-dir.ps1 [-FeatureDir <path>]` — `-FeatureDir` param takes precedence over `$env:FEATURE_DIR`
-- On success: exits 0, prints the resolved absolute path to the `uml/` directory (e.g. `/repo/specs/011-feature/uml`)
-- On error (no directory provided): exits 1, writes an error message to stderr
-- Used by the `speckit-architect` adapter to initialise `uml/` before writing any diagram file
 
 ## Adding New Agent Support
 

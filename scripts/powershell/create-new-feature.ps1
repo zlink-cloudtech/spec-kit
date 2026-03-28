@@ -296,62 +296,97 @@ if ($SpecDir) {
         $branchSuffix = Get-BranchName -Description $featureDesc
     }
 
-    # Determine branch number
-    if ($Number -eq 0) {
-        if ($hasGit) {
-            # Check existing branches on remotes
-            $Number = Get-NextBranchNumber -SpecsDir $specsDir
-        } else {
-            # Fall back to local directory check
-            $Number = (Get-HighestNumberFromSpecs -SpecsDir $specsDir) + 1
-        }
-    }
-
-    $featureNum = ('{0:000}' -f $Number)
-    $branchName = "$Type/$featureNum-$branchSuffix"
-
-    # GitHub enforces a 244-byte limit on branch names
-    # Validate and truncate if necessary
-    $maxBranchLength = 244
-    if ($branchName.Length -gt $maxBranchLength) {
-        # Calculate how much we need to trim from suffix
-        # Account for: type/ (variable) + feature number (3) + hyphen (1)
-        $typePrefixLength = $Type.Length + 1
-        $maxSuffixLength = $maxBranchLength - $typePrefixLength - 4
-        
-        # Truncate suffix
-        $truncatedSuffix = $branchSuffix.Substring(0, [Math]::Min($branchSuffix.Length, $maxSuffixLength))
-        # Remove trailing hyphen if truncation created one
-        $truncatedSuffix = $truncatedSuffix -replace '-$', ''
-        
-        $originalBranchName = $branchName
-        $branchName = "$Type/$featureNum-$truncatedSuffix"
-        
-        Write-Warning "[specify] Branch name exceeded GitHub's 244-byte limit"
-        Write-Warning "[specify] Original: $originalBranchName ($($originalBranchName.Length) bytes)"
-        Write-Warning "[specify] Truncated to: $branchName ($($branchName.Length) bytes)"
-    }
-
+    # Check if a branch with the same type/short-name already exists (resume existing feature)
+    $existingBranch = ""
     if ($hasGit) {
-        try {
-            git checkout -b $branchName | Out-Null
-        } catch {
-            Write-Warning "Failed to create git branch: $branchName"
+        $allBranches = git branch -a 2>$null | ForEach-Object {
+            $_ -replace '^\*?\s+', '' -replace '^remotes/[^/]+/', ''
+        } | Sort-Object -Unique
+        $existingBranch = $allBranches | Where-Object { $_ -match "^$Type/\d{3}-$([regex]::Escape($branchSuffix))$" } | Select-Object -First 1
+    }
+
+    if ($existingBranch) {
+        # Resume: existing branch found with same type/short-name
+        Write-Warning "[specify] Found existing branch for '$branchSuffix': $existingBranch"
+        $branchName = $existingBranch
+        if ($branchName -match '^[^/]+/(\d{3})-') { $featureNum = $matches[1] } else { $featureNum = "000" }
+        $featureDir = Join-Path $specsDir "$featureNum-$branchSuffix"
+        New-Item -ItemType Directory -Path $featureDir -Force | Out-Null
+        if ($hasGit) {
+            try {
+                git show-ref --verify --quiet "refs/heads/$branchName"
+                $localExists = $LASTEXITCODE -eq 0
+                if ($localExists) {
+                    Write-Warning "[specify] Checking out existing local branch..."
+                    git checkout "$branchName" | Out-Null
+                } else {
+                    Write-Warning "[specify] Checking out from remote..."
+                    git checkout -b "$branchName" "origin/$branchName" | Out-Null
+                }
+            } catch {
+                Write-Warning "Git operation failed: $_"
+            }
         }
     } else {
-        Write-Warning "[specify] Warning: Git repository not detected; skipped branch creation for $branchName"
-    }
+        # Determine branch number
+        if ($Number -eq 0) {
+            if ($hasGit) {
+                # Check existing branches on remotes
+                $Number = Get-NextBranchNumber -SpecsDir $specsDir
+            } else {
+                # Fall back to local directory check
+                $Number = (Get-HighestNumberFromSpecs -SpecsDir $specsDir) + 1
+            }
+        }
 
-    $featureDir = Join-Path $specsDir "$featureNum-$branchSuffix"
-    New-Item -ItemType Directory -Path $featureDir -Force | Out-Null
+        $featureNum = ('{0:000}' -f $Number)
+        $branchName = "$Type/$featureNum-$branchSuffix"
+
+        # GitHub enforces a 244-byte limit on branch names
+        # Validate and truncate if necessary
+        $maxBranchLength = 244
+        if ($branchName.Length -gt $maxBranchLength) {
+            # Calculate how much we need to trim from suffix
+            # Account for: type/ (variable) + feature number (3) + hyphen (1)
+            $typePrefixLength = $Type.Length + 1
+            $maxSuffixLength = $maxBranchLength - $typePrefixLength - 4
+
+            # Truncate suffix
+            $truncatedSuffix = $branchSuffix.Substring(0, [Math]::Min($branchSuffix.Length, $maxSuffixLength))
+            # Remove trailing hyphen if truncation created one
+            $truncatedSuffix = $truncatedSuffix -replace '-$', ''
+
+            $originalBranchName = $branchName
+            $branchName = "$Type/$featureNum-$truncatedSuffix"
+
+            Write-Warning "[specify] Branch name exceeded GitHub's 244-byte limit"
+            Write-Warning "[specify] Original: $originalBranchName ($($originalBranchName.Length) bytes)"
+            Write-Warning "[specify] Truncated to: $branchName ($($branchName.Length) bytes)"
+        }
+
+        if ($hasGit) {
+            try {
+                git checkout -b $branchName | Out-Null
+            } catch {
+                Write-Warning "Failed to create git branch: $branchName"
+            }
+        } else {
+            Write-Warning "[specify] Warning: Git repository not detected; skipped branch creation for $branchName"
+        }
+
+        $featureDir = Join-Path $specsDir "$featureNum-$branchSuffix"
+        New-Item -ItemType Directory -Path $featureDir -Force | Out-Null
+    }
 }
 
 $template = Join-Path $repoRoot '.specify/templates/spec-template.md'
 $specFile = Join-Path $featureDir 'spec.md'
-if (Test-Path $template) { 
-    Copy-Item $template $specFile -Force 
-} else { 
-    New-Item -ItemType File -Path $specFile | Out-Null 
+if (-not (Test-Path $specFile)) {
+    if (Test-Path $template) {
+        Copy-Item $template $specFile -Force
+    } else {
+        New-Item -ItemType File -Path $specFile | Out-Null
+    }
 }
 
 # Set the SPECIFY_FEATURE environment variable for the current session

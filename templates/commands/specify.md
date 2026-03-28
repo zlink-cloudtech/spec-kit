@@ -81,33 +81,12 @@ Given that feature description, do this:
         - "Emergency fix for database connection" → type: `hotfix`, short-name: "db-connection"
         - "Refactor the authentication module" → type: `refactor`, short-name: "auth-module"
 
-   c. **Check for existing branches before creating new one**:
-
-      i. First, fetch all remote branches to ensure we have the latest information:
-
-         ```bash
-         git fetch --all --prune
-         ```
-
-      ii. Find the highest feature number across all sources for the short-name:
-         - Remote branches: `git ls-remote --heads origin | grep -E 'refs/heads/(feat|bug|hotfix|refactor|docs|chore)/[0-9]+-'`
-         - Local branches: `git branch | grep -E '(feat|bug|hotfix|refactor|docs|chore)/[0-9]+-'`
-         - Specs directories: Check for directories matching `specs/[0-9]+-<short-name>`
-
-      iii. Determine the next available number:
-         - Extract all numbers from all three sources
-         - Find the highest number N
-         - Use N+1 for the new branch number
-
-      iv. Run the script `{SCRIPT}` with the calculated number, type, and short-name:
-         - Pass `--type <type> --number N+1 --short-name "your-short-name"` along with the feature description
-         - Bash example: `{SCRIPT} --json --type feat --number 5 --short-name "user-auth" "Add user authentication"`
-         - PowerShell example: `{SCRIPT} -Json -Type feat -Number 5 -ShortName "user-auth" "Add user authentication"`
+   c. **Run the script** with the type and short-name — the script auto-detects the next globally available number:
+         - Bash example: `{SCRIPT} --json --type feat --short-name "user-auth" "Add user authentication"`
+         - PowerShell example: `{SCRIPT} -Json -Type feat -ShortName "user-auth" "Add user authentication"`
 
       **IMPORTANT**:
-      - Check all three sources (remote branches, local branches, specs directories) to find the highest number
-      - Only match branches/directories with the exact short-name pattern
-      - If no existing branches/directories found with this short-name, start with number 1
+      - Do NOT pass `--number` — let the script auto-detect the next globally-unique number across all branches
       - You must only ever run this script once per feature
       - The JSON is provided in the terminal as output - always refer to it to get the actual content you're looking for
       - The JSON output will contain BRANCH_NAME, SPEC_FILE, and BRANCH_TYPE

@@ -100,131 +100,66 @@ def test_skill_md_structure():
 
 
 # ---------------------------------------------------------------------------
-# Adapter: sequence diagram trigger rule
+# Adapter: diagram rules are delegated to SKILL.md (not duplicated in adapter)
 # ---------------------------------------------------------------------------
 
 
-def test_adapter_sequence_rule():
-    """Adapter plan hook contains sequence diagram trigger rule."""
+def test_adapter_delegates_diagrams_to_skill():
+    """Adapter plan hook delegates diagram decisions to SKILL.md Diagram Matrix."""
     instructions = _get_adapter_plan_instructions()
 
-    assert "setup-uml-dir" in instructions, (
-        "Adapter plan hook must reference 'setup-uml-dir' script"
+    # The adapter must reference SKILL.md for diagram strategy
+    assert re.search(r"SKILL\.md", instructions), (
+        "Adapter plan hook must reference SKILL.md for diagram decisions"
     )
-    assert "sequenceDiagram" in instructions, (
-        "Adapter plan hook must contain 'sequenceDiagram' trigger"
-    )
-    assert "uml/sequence.md" in instructions, (
-        "Adapter plan hook must specify output path 'uml/sequence.md'"
-    )
-    # MUST obligation near cross-component trigger
-    assert re.search(r"must|MUST", instructions), (
-        "Adapter plan hook must use MUST/must obligation level for sequence diagram"
-    )
-    cross_component = re.search(r"cross.component|cross.service", instructions, re.IGNORECASE)
-    assert cross_component, (
-        "Adapter plan hook must mention 'cross-component' or 'cross-service' trigger condition"
-    )
-    # FR-011: diagrams must be wrapped in ```mermaid blocks
-    assert "```mermaid" in instructions, (
-        "Adapter plan hook must instruct agents to wrap diagrams in ```mermaid fenced blocks (FR-011)"
+    assert re.search(r"[Dd]iagram\s+[Mm]atrix|Diagram Matrix", instructions), (
+        "Adapter plan hook must reference the 'Diagram Matrix' in SKILL.md"
     )
 
-
-# ---------------------------------------------------------------------------
-# Adapter: ER diagram trigger rule
-# ---------------------------------------------------------------------------
-
-
-def test_adapter_er_diagram_rule():
-    """Adapter plan hook contains ER diagram trigger rule."""
-    instructions = _get_adapter_plan_instructions()
-
-    assert "erDiagram" in instructions, (
-        "Adapter plan hook must contain 'erDiagram' trigger"
-    )
-    assert "data-model.md" in instructions, (
-        "Adapter plan hook must reference 'data-model.md' for ER diagram output"
-    )
-    assert re.search(r"must|MUST", instructions), (
-        "Adapter plan hook must use MUST/must obligation level for ER diagram"
-    )
-    assert re.search(r"persistent|entities", instructions, re.IGNORECASE), (
-        "Adapter plan hook must mention 'persistent' or 'entities' for ER trigger"
-    )
-    # Ordering: erDiagram must appear before stateDiagram-v2
-    er_idx = instructions.find("erDiagram")
-    state_idx = instructions.find("stateDiagram-v2")
-    if state_idx != -1:
-        assert er_idx < state_idx, (
-            "erDiagram rule must appear before stateDiagram-v2 rule in adapter instructions"
+    # Specific diagram types must NOT be duplicated in the adapter —
+    # they live exclusively in SKILL.md
+    for diagram_type in FIVE_DIAGRAM_TYPES:
+        assert diagram_type not in instructions, (
+            f"Adapter plan hook must NOT duplicate diagram type '{diagram_type}' "
+            f"— diagram rules belong exclusively in SKILL.md"
         )
 
 
-# ---------------------------------------------------------------------------
-# Adapter: state diagram trigger rule
-# ---------------------------------------------------------------------------
+def test_adapter_sequence_rule():
+    """Sequence diagram rules live in SKILL.md, not in the adapter."""
+    instructions = _get_adapter_plan_instructions()
+    assert "sequenceDiagram" not in instructions, (
+        "sequenceDiagram trigger must not be duplicated in the adapter hook"
+    )
+
+
+def test_adapter_er_diagram_rule():
+    """ER diagram rules live in SKILL.md, not in the adapter."""
+    instructions = _get_adapter_plan_instructions()
+    assert "erDiagram" not in instructions, (
+        "erDiagram trigger must not be duplicated in the adapter hook"
+    )
 
 
 def test_adapter_state_diagram_rule():
-    """Adapter plan hook contains state machine trigger rule."""
+    """State diagram rules live in SKILL.md, not in the adapter."""
     instructions = _get_adapter_plan_instructions()
-
-    assert "stateDiagram-v2" in instructions, (
-        "Adapter plan hook must contain 'stateDiagram-v2' trigger"
+    assert "stateDiagram-v2" not in instructions, (
+        "stateDiagram-v2 trigger must not be duplicated in the adapter hook"
     )
-    assert "data-model.md" in instructions, (
-        "Adapter plan hook must reference 'data-model.md' for state diagram"
-    )
-    assert re.search(r"must|MUST", instructions), (
-        "Adapter plan hook must use MUST/must obligation level for state diagram"
-    )
-    assert re.search(r"state|transition", instructions, re.IGNORECASE), (
-        "Adapter plan hook must mention 'state' or 'transition' phrasing for state diagram trigger"
-    )
-
-
-# ---------------------------------------------------------------------------
-# Adapter: flowchart trigger rule
-# ---------------------------------------------------------------------------
 
 
 def test_adapter_flowchart_rule():
-    """Adapter plan hook contains flowchart trigger rule."""
+    """Flowchart rules live in SKILL.md, not in the adapter."""
     instructions = _get_adapter_plan_instructions()
-
-    assert "flowchart" in instructions, (
-        "Adapter plan hook must contain 'flowchart' trigger"
+    assert "flowchart" not in instructions, (
+        "flowchart trigger must not be duplicated in the adapter hook"
     )
-    assert "uml/flow.md" in instructions, (
-        "Adapter plan hook must specify output path 'uml/flow.md'"
-    )
-    assert re.search(r"should|SHOULD", instructions), (
-        "Adapter plan hook must use SHOULD/should obligation level for flowchart"
-    )
-    assert re.search(r"decision|conditional", instructions, re.IGNORECASE), (
-        "Adapter plan hook must mention 'decision' or 'conditional' phrasing for flowchart trigger"
-    )
-
-
-# ---------------------------------------------------------------------------
-# Adapter: class diagram trigger rule
-# ---------------------------------------------------------------------------
 
 
 def test_adapter_class_diagram_rule():
-    """Adapter plan hook contains class diagram trigger rule."""
+    """Class diagram rules live in SKILL.md, not in the adapter."""
     instructions = _get_adapter_plan_instructions()
-
-    assert "classDiagram" in instructions, (
-        "Adapter plan hook must contain 'classDiagram' trigger"
-    )
-    assert "uml/class-diagram.md" in instructions, (
-        "Adapter plan hook must specify output path 'uml/class-diagram.md'"
-    )
-    assert re.search(r"should|SHOULD", instructions), (
-        "Adapter plan hook must use SHOULD/should obligation level for class diagram"
-    )
-    assert re.search(r"inheritance|composition", instructions, re.IGNORECASE), (
-        "Adapter plan hook must mention 'inheritance' or 'composition' phrasing for class diagram trigger"
+    assert "classDiagram" not in instructions, (
+        "classDiagram trigger must not be duplicated in the adapter hook"
     )
