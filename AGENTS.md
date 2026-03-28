@@ -192,7 +192,7 @@ Specify supports multiple AI agents by generating agent-specific command files a
 
 | Agent                      | Directory              | Format   | CLI Tool        | Instruction Directory   | Skills Directory        | Description                 |
 | -------------------------- | ---------------------- | -------- | --------------- | ----------------------- | ----------------------- | --------------------------- |
-| **Claude Code**            | `.claude/commands/`    | Markdown | `claude`        | N/A                     | `.claude/skills/`       | Anthropic's Claude Code CLI |
+| **Claude Code**            | `.claude/agents/`      | Markdown (Agent) | `claude`   | N/A                     | `.claude/skills/`       | Anthropic's Claude Code CLI |
 | **Gemini CLI**             | `.gemini/commands/`    | TOML     | `gemini`        | N/A                     | `.specify/skills/`      | Google's Gemini CLI         |
 | **GitHub Copilot**         | `.github/agents/`      | Markdown | N/A (IDE-based) | `.github/instructions/` | `.github/skills/`       | GitHub Copilot in VS Code   |
 | **Cursor**                 | `.cursor/commands/`    | Markdown | `cursor-agent`  | N/A                     | `.specify/skills/`      | Cursor CLI                  |
@@ -577,7 +577,7 @@ Work within integrated development environments:
 
 ### Markdown Format
 
-Used by: Claude, Cursor, opencode, Windsurf, Amazon Q Developer, Amp, SHAI, IBM Bob
+Used by: Cursor, opencode, Windsurf, Amazon Q Developer, Amp, SHAI, IBM Bob
 
 **Standard format:**
 
@@ -599,6 +599,27 @@ mode: speckit.command-name
 
 Command content with {SCRIPT} and $ARGUMENTS placeholders.
 ```
+
+### Claude Agent Format
+
+Used by: Claude Code
+
+Files are placed in `.claude/agents/` and follow the Claude Code native subagent format. The frontmatter defines agent metadata; the body is the system prompt.
+
+```markdown
+---
+name: speckit.specify
+description: Create or update the feature specification from a natural language feature description.
+tools: Read, Write, Edit, Bash, Glob, Grep
+model: inherit
+---
+
+You are a specification agent. When invoked, create a feature specification...
+```
+
+> **Migration note**: Prior versions (before 2026-04) placed Claude files in `.claude/commands/` as plain Markdown.
+> If you have an existing installation, delete `.claude/commands/` and run `specify init --ai claude` again to
+> get the new `.claude/agents/` layout with full sub-agent delegation support.
 
 ### TOML Format
 
@@ -647,6 +668,7 @@ Instruction content...
   - Copilot: `.github/agents/` (commands) and `.github/instructions/` (instructions)
   - Cursor: `.cursor/commands/`
   - Windsurf: `.windsurf/workflows/`
+- **Claude Code**: `.claude/agents/` — uses Claude's native subagent format (YAML frontmatter with `name`, `description`, `tools`, `model`, followed by a system prompt body)
 
 ## Argument Patterns
 

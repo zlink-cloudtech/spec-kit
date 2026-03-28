@@ -121,6 +121,69 @@ EOF
   done
 }
 
+# Generate Claude Code native subagent files (.claude/agents/*.md)
+# Each file has YAML frontmatter (name, description, tools, model) followed by the system prompt body.
+generate_claude_agents() {
+  local output_dir=$1 script_variant=$2
+  mkdir -p "$output_dir"
+  for template in templates/commands/*.md; do
+    [[ -f "$template" ]] || continue
+    local name description script_command agent_script_command body file_content
+    name=$(basename "$template" .md)
+
+    # Normalize line endings
+    file_content=$(tr -d '\r' < "$template")
+
+    # Extract description from YAML frontmatter
+    description=$(printf '%s\n' "$file_content" | awk '/^description:/ {sub(/^description:[[:space:]]*/, ""); print; exit}')
+
+    # Extract script command for the chosen variant
+    script_command=$(printf '%s\n' "$file_content" | awk -v sv="$script_variant" '/^[[:space:]]*'"$script_variant"':[[:space:]]*/ {sub(/^[[:space:]]*'"$script_variant"':[[:space:]]*/, ""); print; exit}')
+    if [[ -z $script_command ]]; then
+      echo "Warning: no script command found for $script_variant in $template" >&2
+      script_command="(Missing script command for $script_variant)"
+    fi
+
+    # Extract agent_script command if present
+    agent_script_command=$(printf '%s\n' "$file_content" | awk '
+      /^agent_scripts:$/ { in_agent_scripts=1; next }
+      in_agent_scripts && /^[[:space:]]*'"$script_variant"':[[:space:]]*/ {
+        sub(/^[[:space:]]*'"$script_variant"':[[:space:]]*/, "")
+        print
+        exit
+      }
+      in_agent_scripts && /^[a-zA-Z]/ { in_agent_scripts=0 }
+    ')
+
+    # Replace {SCRIPT} / {AGENT_SCRIPT} placeholders
+    body=$(printf '%s\n' "$file_content" | sed "s|{SCRIPT}|${script_command}|g")
+    if [[ -n $agent_script_command ]]; then
+      body=$(printf '%s\n' "$body" | sed "s|{AGENT_SCRIPT}|${agent_script_command}|g")
+    fi
+
+    # Strip original frontmatter — keep only the body after the closing ---
+    body=$(printf '%s\n' "$body" | awk '
+      /^---$/ { dash_count++; next }
+      dash_count < 2 { next }
+      { print }
+    ')
+
+    # Apply standard substitutions
+    body=$(printf '%s\n' "$body" | sed 's/{ARGS}/\$ARGUMENTS/g' | sed 's/__AGENT__/claude/g' | rewrite_paths)
+
+    # Write Claude agent file with native frontmatter
+    {
+      echo "---"
+      echo "name: speckit.${name}"
+      echo "description: ${description}"
+      echo "tools: Read, Write, Edit, Bash, Glob, Grep"
+      echo "model: inherit"
+      echo "---"
+      printf '%s\n' "$body"
+    } > "$output_dir/speckit.${name}.md"
+  done
+}
+
 build_variant() {
   local agent=$1 script=$2
   local base_dir="$GENRELEASES_DIR/sdd-${agent}-package-${script}"
@@ -184,8 +247,8 @@ build_variant() {
 
   case $agent in
     claude)
-      mkdir -p "$base_dir/.claude/commands"
-      generate_commands claude md "\$ARGUMENTS" "$base_dir/.claude/commands" "$script" ;;
+      mkdir -p "$base_dir/.claude/agents"
+      generate_claude_agents "$base_dir/.claude/agents" "$script" ;;
     gemini)
       mkdir -p "$base_dir/.gemini/commands"
       generate_commands gemini toml "{{args}}" "$base_dir/.gemini/commands" "$script"

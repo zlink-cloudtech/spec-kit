@@ -201,6 +201,86 @@ agent: $basename
     }
 }
 
+# Generate Claude Code native subagent files (.claude/agents/*.md)
+# Each file has YAML frontmatter (name, description, tools, model) followed by the system prompt body.
+function Generate-ClaudeAgents {
+    param(
+        [string]$OutputDir,
+        [string]$ScriptVariant
+    )
+
+    New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+
+    $templates = Get-ChildItem -Path "templates/commands/*.md" -File -ErrorAction SilentlyContinue
+
+    foreach ($template in $templates) {
+        $name = [System.IO.Path]::GetFileNameWithoutExtension($template.Name)
+
+        # Read file content and normalize line endings
+        $fileContent = (Get-Content -Path $template.FullName -Raw) -replace "`r`n", "`n"
+
+        # Extract description from YAML frontmatter
+        $description = ""
+        if ($fileContent -match '(?m)^description:\s*(.+)$') {
+            $description = $matches[1]
+        }
+
+        # Extract script command for the chosen variant
+        $scriptCommand = ""
+        if ($fileContent -match "(?m)^\s*${ScriptVariant}:\s*(.+)$") {
+            $scriptCommand = $matches[1]
+        }
+        if ([string]::IsNullOrEmpty($scriptCommand)) {
+            Write-Warning "No script command found for $ScriptVariant in $($template.Name)"
+            $scriptCommand = "(Missing script command for $ScriptVariant)"
+        }
+
+        # Extract agent_script command if present
+        $agentScriptCommand = ""
+        if ($fileContent -match "(?ms)agent_scripts:.*?^\s*${ScriptVariant}:\s*(.+?)$") {
+            $agentScriptCommand = $matches[1].Trim()
+        }
+
+        # Replace {SCRIPT} / {AGENT_SCRIPT} placeholders
+        $body = $fileContent -replace '\{SCRIPT\}', $scriptCommand
+        if (-not [string]::IsNullOrEmpty($agentScriptCommand)) {
+            $body = $body -replace '\{AGENT_SCRIPT\}', $agentScriptCommand
+        }
+
+        # Strip original frontmatter — keep only the body after the closing ---
+        $lines = $body -split "`n"
+        $bodyLines = @()
+        $dashCount = 0
+        foreach ($line in $lines) {
+            if ($line -match '^---$') {
+                $dashCount++
+                continue
+            }
+            if ($dashCount -ge 2) {
+                $bodyLines += $line
+            }
+        }
+        $body = $bodyLines -join "`n"
+
+        # Apply standard substitutions
+        $body = $body -replace '\{ARGS\}', '\$ARGUMENTS'
+        $body = $body -replace '__AGENT__', 'claude'
+        $body = Rewrite-Paths -Content $body
+
+        # Write Claude agent file with native frontmatter
+        $agentFrontmatter = @"
+---
+name: speckit.$name
+description: $description
+tools: Read, Write, Edit, Bash, Glob, Grep
+model: inherit
+---
+"@
+        $outputFile = Join-Path $OutputDir "speckit.$name.md"
+        Set-Content -Path $outputFile -Value ($agentFrontmatter + $body) -NoNewline
+    }
+}
+
 function Build-Variant {
     param(
         [string]$Agent,
@@ -284,8 +364,8 @@ function Build-Variant {
     # Generate agent-specific command files
     switch ($Agent) {
         'claude' {
-            $cmdDir = Join-Path $baseDir ".claude/commands"
-            Generate-Commands -Agent 'claude' -Extension 'md' -ArgFormat '$ARGUMENTS' -OutputDir $cmdDir -ScriptVariant $Script
+            $agentsDir = Join-Path $baseDir ".claude/agents"
+            Generate-ClaudeAgents -OutputDir $agentsDir -ScriptVariant $Script
         }
         'gemini' {
             $cmdDir = Join-Path $baseDir ".gemini/commands"
