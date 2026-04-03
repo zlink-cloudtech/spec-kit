@@ -6,6 +6,12 @@ All notable changes to this project from commit 9111699cd27879e3e6301651a03e502e
 > The original `CHANGELOG.md` has been renamed to `CHANGELOG.md.origin`.
 > The original `README.md` has been renamed to `README.md.origin`.
 
+## [2.14.0] - 2026-04-03
+
+### Added
+
+- add command file generation for Claude agents in release scripts
+
 ## [2.13.0] - 2026-03-28
 
 ### Added
