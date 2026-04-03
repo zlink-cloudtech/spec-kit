@@ -247,6 +247,8 @@ build_variant() {
 
   case $agent in
     claude)
+      mkdir -p "$base_dir/.claude/commands"
+      generate_commands claude md "\$ARGUMENTS" "$base_dir/.claude/commands" "$script"
       mkdir -p "$base_dir/.claude/agents"
       generate_claude_agents "$base_dir/.claude/agents" "$script" ;;
     gemini)

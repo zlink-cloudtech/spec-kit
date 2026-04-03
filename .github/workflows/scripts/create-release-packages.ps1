@@ -364,6 +364,8 @@ function Build-Variant {
     # Generate agent-specific command files
     switch ($Agent) {
         'claude' {
+            $cmdDir = Join-Path $baseDir ".claude/commands"
+            Generate-Commands -Agent 'claude' -Extension 'md' -ArgFormat '$ARGUMENTS' -OutputDir $cmdDir -ScriptVariant $Script
             $agentsDir = Join-Path $baseDir ".claude/agents"
             Generate-ClaudeAgents -OutputDir $agentsDir -ScriptVariant $Script
         }
