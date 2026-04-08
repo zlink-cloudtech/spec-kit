@@ -28,32 +28,34 @@ The text the user typed after `/speckit.specify` in the triggering message **is*
 Given that feature description, do this:
 
 1. **Detect workflow mode**:
-   
+
    Check if the user provided a `--spec-dir` parameter in their input:
    - If `--spec-dir <path>` is present: Use **Mode A** (existing directory workflow)
    - Otherwise: Use **Mode B** (auto-create directory workflow - original behavior)
 
 2. **Mode A: Existing Directory Workflow** (when `--spec-dir` provided):
-   
+
    a. Extract the directory path from user input after `--spec-dir`
-   
+
    b. Determine the branch type: check if `--type <type>` is provided (default: `feat`). Valid types: `feat`, `bug`, `hotfix`, `refactor`, `docs`, `chore`.
-   
+
    c. Run the script with the spec-dir and type parameters:
+
       ```bash
       .specify/scripts/bash/create-new-feature.sh --json --type feat --spec-dir "specs/001-feature-name/" "$ARGUMENTS"
       ```
-   
+
    d. The script will:
       - Validate the directory exists and is writable
       - Extract spec name from directory path (e.g., `specs/001-oauth-integration/` → `001-oauth-integration`)
       - Build branch name with type prefix (e.g., `feat/001-oauth-integration`)
       - Create or checkout the branch
       - Initialize spec.md in the existing directory
-   
+
    e. Skip to step 3 (Load template)
-   
+
    **Example usage**:
+
    ```bash
    /speckit.specify --spec-dir specs/001-oauth-integration/ "Add OAuth2 authentication"
    /speckit.specify --type bug --spec-dir specs/002-login-crash/ "Fix login crash"
@@ -118,7 +120,6 @@ Given that feature description, do this:
        - Prioritize clarifications by impact: scope > security/privacy > user experience > technical details
     4. Fill User Scenarios & Testing section
        If no clear user flow: ERROR "Cannot determine user scenarios"
-       **Map each user story to relevant skills (0-N).**
     5. Generate Functional Requirements
        Each requirement must be testable
        Use reasonable defaults for unspecified details (document assumptions in Assumptions section)
@@ -129,27 +130,11 @@ Given that feature description, do this:
     7. Identify Key Entities (if data involved)
     8. Return: SUCCESS (spec ready for planning)
 
-5. **Analyze Available Domain Skills**:
-
-   Run the following command to get the list of domain skills available in this project:
-   ```bash
-   python3 scripts/resolve-skills.py --list-domain
-   ```
-
-   This returns only **domain skills** (skills without a `speckit-adapter.yaml`). These are user-defined, project-specific skills that must be actively discovered and used.
-
-   - **DO NOT** include adapter-based skills (`speckit-architect`, `speckit-developer`, `speckit-tech-lead`, `speckit-librarian`, etc.) in the Available Skills Analysis — they are automatically injected at their respective phases and require no mention in the spec.
-   - From the domain skills list, identify any that are **directly relevant** to this feature's requirements.
-   - If **none** are relevant, write `None applicable` in the Available Skills Analysis section.
-   - If a relevant skill is found, **READ its full `SKILL.md`** content. Look for "Constraints", "Requirements", "Workflow", or "Testing & Verification" sections and INJECT those requirements into `spec.md` under `Requirements` or `Success Criteria`.
-   - **Constraint Injection example**: If skill says "Must run pipeline tests", add `SC-XXX: Passes pipeline tests` to Spec.
-
-6. Write the specification to SPEC_FILE using the template structure:
+8. Write the specification to SPEC_FILE using the template structure:
    - Follow `templates/spec-template.md` perfectly.
-   - Populate `## Available Skills Analysis` with your findings.
    - Replace placeholders with concrete details derived from the feature description.
 
-7. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
+9. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
 
    a. **Create Spec Quality Checklist**: Generate a checklist file at `FEATURE_DIR/checklists/requirements.md` using the checklist template structure with these validation items:
 
@@ -196,7 +181,7 @@ Given that feature description, do this:
 
    c. **Handle Validation Results**:
 
-      - **If all items pass**: Mark checklist complete and proceed to step 6
+      - **If all items pass**: Mark checklist complete and proceed to step 10
 
       - **If items fail (excluding [NEEDS CLARIFICATION])**:
         1. List the failing items and specific issues
@@ -241,7 +226,7 @@ Given that feature description, do this:
 
    d. **Update Checklist**: After each validation iteration, update the checklist file with current pass/fail status
 
-7. Report completion with branch name (including type prefix, e.g., `feat/001-user-auth`), branch type, spec file path, checklist results, and readiness for the next phase (`/speckit.clarify` or `/speckit.plan`).
+10. Report completion with branch name (including type prefix, e.g., `feat/001-user-auth`), branch type, spec file path, checklist results, and readiness for the next phase (`/speckit.clarify` or `/speckit.plan`).
 
 **NOTE:** The script creates and checks out the new branch (with type prefix) and initializes the spec file before writing. Branch name format: `type/###-short-name`.
 

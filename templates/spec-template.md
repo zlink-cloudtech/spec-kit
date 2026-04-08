@@ -5,23 +5,6 @@
 **Status**: Draft  
 **Input**: User description: "$ARGUMENTS"
 
-## Available Skills Analysis
-
-<!--
-  List ONLY domain skills (skills WITHOUT a speckit-adapter.yaml) that are relevant to this feature.
-  Domain skills are user/project-defined skills that must be actively discovered and used.
-
-  HOW TO DISCOVER: Run `python3 scripts/resolve-skills.py --list-domain` to get the candidate list.
-
-  RULES:
-  - DO NOT list adapter-based skills (speckit-architect, speckit-developer, speckit-tech-lead,
-    speckit-librarian, etc.) — they are automatically injected at their respective phases.
-  - If a domain skill is relevant, plan to use it and inject its constraints into Requirements/Success Criteria.
-  - If no domain skills are applicable, write: "None applicable"
--->
-
-- **[Skill Name]**: [How it relates to the requirement]
-
 ## User Scenarios & Testing *(mandatory)*
 
 <!--
@@ -41,8 +24,6 @@
 
 [Describe this user journey in plain language]
 
-**Linked Skills**: [Domain skills relevant to this story (from --list-domain output), e.g., "release-server-developer", or "None"]
-
 **Why this priority**: [Explain the value and why it has this priority level]
 
 **Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by [specific action] and delivers [specific value]"]
@@ -58,8 +39,6 @@
 
 [Describe this user journey in plain language]
 
-**Linked Skills**: [Domain skills relevant to this story (from --list-domain output), e.g., "release-server-developer", or "None"]
-
 **Why this priority**: [Explain the value and why it has this priority level]
 
 **Independent Test**: [Describe how this can be tested independently]
@@ -73,8 +52,6 @@
 ### User Story 3 - [Brief Title] (Priority: P3)
 
 [Describe this user journey in plain language]
-
-**Linked Skills**: [Domain skills relevant to this story (from --list-domain output), e.g., "release-server-developer", or "None"]
 
 **Why this priority**: [Explain the value and why it has this priority level]
 

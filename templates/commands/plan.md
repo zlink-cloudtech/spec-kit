@@ -49,8 +49,9 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Phase 1: Generate data-model.md, contracts/, quickstart.md
    - Phase 1: Update agent context by running the agent script
    - **Skill Alignment**:
-     - Check `spec.md` for "Available Skills Analysis" and "Linked Skills" in User Stories.
-     - Map requirements to available skills in `plan.md` under "Skill Alignment Strategy".
+     - Run `python3 scripts/resolve-skills.py --list-domain` from repo root to get all available domain skills.
+     - Identify which domain skills are relevant to the current feature's requirements and design decisions.
+     - Map requirements to relevant skills in `plan.md` under "Skill Alignment Strategy".
      - **Workflow Injection**:
        - READ the mapped Skill's `SKILL.md` in its **ENTIRETY**. You MUST NOT skip sections or only read summaries.
        - Look for "Standard Development Workflow", "Process", or "Verification" sections.
