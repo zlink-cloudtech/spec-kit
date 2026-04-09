@@ -93,6 +93,10 @@ echo -e "\n📚 Installing DocFx..."
 run_command "dotnet tool update -g docfx"
 echo "✅ Done"
 
+echo -e "\n🧩 Syncing skills via Skillkit..."
+run_command "skillkit sync --force"
+echo "✅ Done"
+
 echo -e "\n⚓ Setting up Git Hooks..."
 run_command "chmod +x .devcontainer/setup-git-hooks.sh"
 run_command "./.devcontainer/setup-git-hooks.sh"

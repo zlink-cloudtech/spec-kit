@@ -16,68 +16,68 @@ Choose the workflow that matches your current task.
 
 **Scenario**: Adding APIs, modifying storage, fixing bugs, or updating configuration.
 
-1.  **Environment Setup**:
-    *   **Goal**: Ensure dependencies are installed.
-    *   **Tool**: [release-server-setup](#setup-development-environment) (`release-server-setup.py`)
-    *   **Manual**: `cd release-server && uv sync --all-extras`
-2.  **Impact Analysis**:
-    *   **API Changes**: Check `openapi.yaml` and client scripts.
-    *   **Storage Changes**: Verify persistence compatibility.
-3.  **Development & Test**:
-    *   Modify code in `src/`.
-    *   Write tests in `tests/`.
-    *   **Run Tests**: `cd release-server && uv run pytest`
-4.  **Verification**:
-    *   **Pipeline Check**: [release-server-test](#local-workflow-test) (`release-server-test.py`) (Simulate CI - MANDATORY for core changes)
-        *   *Troubleshooting*: If pytest fails with compilation errors or segfaults, clear act cache:
-            1.  Check: `docker volume ls | grep act-toolcache`
-            2.  Remove: `docker volume rm act-toolcache`
-    *   **Packaging Check**: [release-server-build](#build-docker-image) (`release-server-build.py`) to ensure Docker build succeeds.
-5.  **Documentation**:
-    *   Update `release-server/README.md` (Features/Config).
-    *   Update `release-server/openapi.yaml` (API Contract).
-    *   Update `release-server/chart/README.md` (Deployment params).
-    *   Update `reference/technical-context.md` (Tech Stack/Structure).
+1. **Environment Setup**:
+    * **Goal**: Ensure dependencies are installed.
+    * **Tool**: [release-server-setup](#setup-development-environment) (`release-server-setup.py`)
+    * **Manual**: `cd release-server && uv sync --all-extras`
+2. **Impact Analysis**:
+    * **API Changes**: Check `openapi.yaml` and client scripts.
+    * **Storage Changes**: Verify persistence compatibility.
+3. **Development & Test**:
+    * Modify code in `src/`.
+    * Write tests in `tests/`.
+    * **Run Tests**: `cd release-server && uv run pytest`
+4. **Verification**:
+    * **Pipeline Check**: [release-server-test](#local-workflow-test) (`release-server-test.py`) (Simulate CI - MANDATORY for core changes)
+        * *Troubleshooting*: If pytest fails with compilation errors or segfaults, clear act cache:
+            1. Check: `docker volume ls | grep act-toolcache`
+            2. Remove: `docker volume rm act-toolcache`
+    * **Packaging Check**: [release-server-build](#build-docker-image) (`release-server-build.py`) to ensure Docker build succeeds.
+5. **Documentation**:
+    * Update `release-server/README.md` (Features/Config).
+    * Update `release-server/openapi.yaml` (API Contract).
+    * Update `release-server/chart/README.md` (Deployment params).
+    * Update `reference/technical-context.md` (Tech Stack/Structure).
 
 ### 2. Packaging & Release
 
 **Scenario**: Creating Docker images and Helm charts for release.
 
-1.  **Build Docker Image**:
-    *   **Tool**: [release-server-build](#build-docker-image)
-    *   **Manual**: `scripts/build.sh`
-2.  **Verify Chart**:
-    *   **Action**: Test Helm chart packaging.
-    *   **Script**: `.github/workflows/scripts/publish-release-server-chart-ghcr.sh <version>` (Dry run or use test version)
-3.  **Create Release**:
-    *   **Tool**: [release-server-release](#create-release)
+1. **Build Docker Image**:
+    * **Tool**: [release-server-build](#build-docker-image)
+    * **Manual**: `scripts/build.sh`
+2. **Verify Chart**:
+    * **Action**: Test Helm chart packaging.
+    * **Script**: `.github/workflows/scripts/publish-release-server-chart-ghcr.sh <version>` (Dry run or use test version)
+3. **Create Release**:
+    * **Tool**: [release-server-release](#create-release)
 
 ### 3. Server Operations
 
 **Scenario**: Managing a running server (local or remote) and its content.
 
-1.  **Run Locally**:
-    *   **Tool**: [release-server-run](#run-server-locally)
-    *   **Manual**: `uv run uvicorn release_server.main:app --reload`
-2.  **Manage Packages**:
-    *   **List**: [release-server-list](#list-packages)
-    *   **Upload**: [release-server-upload](#upload-package)
-    *   **Delete**: [release-server-delete](#delete-package)
+1. **Run Locally**:
+    * **Tool**: [release-server-run](#run-server-locally)
+    * **Manual**: `uv run uvicorn release_server.main:app --reload`
+2. **Manage Packages**:
+    * **List**: [release-server-list](#list-packages)
+    * **Upload**: [release-server-upload](#upload-package)
+    * **Delete**: [release-server-delete](#delete-package)
 
 ## Development Guidelines
 
 ### Code Contribution Locations
 
-*   **Routes**: `src/release_server/router.py`
-*   **Auth**: `src/release_server/auth.py`
-*   **Config**: `src/release_server/config.py`
-*   **Storage**: `src/release_server/storage.py`
-*   **Prompts**: `src/release_server/prompts/`
+* **Routes**: `src/release_server/router.py`
+* **Auth**: `src/release_server/auth.py`
+* **Config**: `src/release_server/config.py`
+* **Storage**: `src/release_server/storage.py`
+* **Prompts**: `src/release_server/prompts/`
 
 ### Testing Standards
 
-*   **Unit Tests**: Must cover new logic. Use `client` fixture.
-*   **Integration**: Verify `gh act` passes before PR.
+* **Unit Tests**: Must cover new logic. Use `client` fixture.
+* **Integration**: Verify `gh act` passes before PR.
 
 ## Tools Reference
 
@@ -232,4 +232,4 @@ options:
 
 ## References
 
-- **Documentation**: See [release-server/README.md](/root/workspaces/zlink-cloudtech/spec-kit/release-server/README.md) for Quickstart, Features, Configuration, and API Endpoints.
+* **Documentation**: See [release-server/README.md](/root/workspaces/zlink-cloudtech/spec-kit/release-server/README.md) for Quickstart, Features, Configuration, and API Endpoints.
