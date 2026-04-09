@@ -73,7 +73,7 @@ Load only the minimal necessary context from each artifact:
 
 **From active skills:**
 
-- Identify used skills from `spec.md` ("Linked Skills") or `plan.md` ("Skill Alignment Strategy")
+- Identify used skills from `plan.md` ("Skill Alignment Strategy")
 - Load `SKILL.md` content for each identified skill
 - **Context Extraction Strategy**: Instead of relying on specific section headers, analyze the content to identify:
   - Procedural workflows (ordered steps)

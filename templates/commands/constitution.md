@@ -1,5 +1,8 @@
 ---
 description: Create or update the project constitution from interactive or provided principle inputs, ensuring all dependent templates stay in sync.
+scripts:
+  sh: scripts/bash/check-prerequisites.sh --json --paths-only
+  ps: scripts/powershell/check-prerequisites.ps1 -Json -PathsOnly
 handoffs: 
   - label: Build Specification
     agent: speckit.specify

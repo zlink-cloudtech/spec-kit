@@ -1,5 +1,8 @@
 ---
 description: Manage project documentation in sync with memory/system-map.md — update, add, delete, deprecate, rename, move, merge, or reposition documents.
+scripts:
+  sh: scripts/bash/check-prerequisites.sh --json --paths-only
+  ps: scripts/powershell/check-prerequisites.ps1 -Json -PathsOnly
 ---
 
 **Role**: Documentation Management Agent  
