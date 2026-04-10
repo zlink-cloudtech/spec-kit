@@ -37,15 +37,15 @@ skills/
 When a SpecKit command runs (e.g., `/speckit.plan`), it:
 
 1. Calls `scripts/bash/update-agent-context.sh <agent> <phase>`
-2. The script invokes `scripts/resolve-skills.py <phase>`
+2. The script invokes `scripts/bash/resolve-skills.sh <phase>` (Linux/macOS) or `scripts/powershell/resolve-skills.ps1 <phase>` (Windows)
 3. The resolver scans `skills/*/speckit-adapter.yaml` for matching phases
 4. Skills are injected into the agent context file (e.g., `CLAUDE.md`)
 
 ### 2. Skill Resolution
 
-The `resolve-skills.py` script:
+The `resolve-skills.sh` / `resolve-skills.ps1` scripts:
 
-```python
+```text
 # Pseudocode
 for each skills/*/speckit-adapter.yaml:
     if hook.phase == requested_phase:
@@ -125,7 +125,7 @@ templates/commands/plan.md executes
     ↓
 {AGENT_SCRIPT} runs with phase=plan
     ↓
-update-agent-context.sh calls resolve-skills.py plan
+update-agent-context.sh calls resolve-skills.sh plan
     ↓
 CLAUDE.md (or agent file) updated with speckit-architect skill
     ↓
@@ -175,7 +175,9 @@ hooks:
 
 ```bash
 # Test the resolver
-python3 scripts/resolve-skills.py implement
+bash scripts/bash/resolve-skills.sh implement
+# On Windows:
+# pwsh scripts/powershell/resolve-skills.ps1 implement
 
 # Test in a real workflow
 export SPECIFY_FEATURE=feat/999-test-skill
@@ -259,7 +261,7 @@ See `templates/speckit-config-template.yaml` for the full configuration template
 
 ### Testing
 
-- ✅ **DO**: Test skills in isolation with `resolve-skills.py`
+- ✅ **DO**: Test skills in isolation with `resolve-skills.sh` / `resolve-skills.ps1`
 - ✅ **DO**: Verify agent behavior in actual workflows
 - ✅ **DO**: Check for context overflow (skill + plan + spec < token limit)
 - ❌ **DON'T**: Deploy untested skills to production workflows
@@ -268,10 +270,10 @@ See `templates/speckit-config-template.yaml` for the full configuration template
 
 ### Skill Not Loading
 
-1. **Check adapter syntax**: Validate YAML with `python3 -m yaml <file>`
+1. **Check adapter syntax**: Validate YAML manually or with a linter
 2. **Check phase name**: Ensure phase matches command (plan/tasks/implement/converge)
 3. **Check file paths**: Verify `context: SKILL.md` points to existing file
-4. **Check script execution**: Run `resolve-skills.py <phase>` manually
+4. **Check script execution**: Run `bash scripts/bash/resolve-skills.sh <phase>` manually (or `pwsh scripts/powershell/resolve-skills.ps1 <phase>` on Windows)
 
 ### Skill Content Corrupted
 

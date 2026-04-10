@@ -84,7 +84,7 @@ Add rows that are relevant; remove or leave empty categories that don't apply.
 | Release Server Chart | `release-server/chart/` | ✅ Active | 2026-03-03 | Helm chart for release server deployment |
 | Doc-Update Command Template | `templates/commands/doc-update.md` | ✅ Active | 2026-03-13 | Standalone `/speckit.doc-update` command template; auto-distributed to all agents via `generate_commands()` in release script |
 | speckit-doc-updater Skill | `skills/speckit-doc-updater/SKILL.md` | ✅ Active | 2026-03-13 | Agent persona for lifecycle-independent documentation management; supports 6 operations (update, add, delete, deprecate, rename/move, merge, reposition) with hard-stop rule on missing system-map |
-| speckit-doc-updater Adapter | `skills/speckit-doc-updater/speckit-adapter.yaml` | ✅ Active | 2026-03-13 | Phase hook registration for `doc-update` phase at priority 100; invocable via `python3 scripts/resolve-skills.py doc-update .` |
+| speckit-doc-updater Adapter | `skills/speckit-doc-updater/speckit-adapter.yaml` | ✅ Active | 2026-03-13 | Phase hook registration for `doc-update` phase at priority 100; invocable via `bash scripts/bash/resolve-skills.sh doc-update .` |
 
 ### 📐 Configuration & Infrastructure
 

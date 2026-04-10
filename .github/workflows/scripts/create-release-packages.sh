@@ -67,20 +67,54 @@ generate_commands() {
       }
       in_agent_scripts && /^[a-zA-Z]/ { in_agent_scripts=0 }
     ')
-    
+
+    # Extract resolve_skills command from YAML frontmatter if present
+    resolve_skills_command=$(printf '%s\n' "$file_content" | awk '
+      /^resolve_skills:$/ { in_section=1; next }
+      in_section && /^[[:space:]]*'"$script_variant"':[[:space:]]*/ {
+        sub(/^[[:space:]]*'"$script_variant"':[[:space:]]*/, "")
+        print
+        exit
+      }
+      in_section && /^[a-zA-Z]/ { in_section=0 }
+    ')
+
+    # Extract list_domain_skills command from YAML frontmatter if present
+    list_domain_skills_command=$(printf '%s\n' "$file_content" | awk '
+      /^list_domain_skills:$/ { in_section=1; next }
+      in_section && /^[[:space:]]*'"$script_variant"':[[:space:]]*/ {
+        sub(/^[[:space:]]*'"$script_variant"':[[:space:]]*/, "")
+        print
+        exit
+      }
+      in_section && /^[a-zA-Z]/ { in_section=0 }
+    ')
+
     # Replace {SCRIPT} placeholder with the script command
     body=$(printf '%s\n' "$file_content" | sed "s|{SCRIPT}|${script_command}|g")
-    
+
     # Replace {AGENT_SCRIPT} placeholder with the agent script command if found
     if [[ -n $agent_script_command ]]; then
       body=$(printf '%s\n' "$body" | sed "s|{AGENT_SCRIPT}|${agent_script_command}|g")
     fi
-    
-    # Remove the scripts: and agent_scripts: sections from frontmatter while preserving YAML structure
+
+    # Replace {RESOLVE_SKILLS} placeholder if found
+    if [[ -n $resolve_skills_command ]]; then
+      body=$(printf '%s\n' "$body" | sed "s|{RESOLVE_SKILLS}|${resolve_skills_command}|g")
+    fi
+
+    # Replace {LIST_DOMAIN_SKILLS} placeholder if found
+    if [[ -n $list_domain_skills_command ]]; then
+      body=$(printf '%s\n' "$body" | sed "s|{LIST_DOMAIN_SKILLS}|${list_domain_skills_command}|g")
+    fi
+
+    # Remove the scripts:, agent_scripts:, resolve_skills:, list_domain_skills: sections from frontmatter
     body=$(printf '%s\n' "$body" | awk '
       /^---$/ { print; if (++dash_count == 1) in_frontmatter=1; else in_frontmatter=0; next }
       in_frontmatter && /^scripts:$/ { skip_scripts=1; next }
       in_frontmatter && /^agent_scripts:$/ { skip_scripts=1; next }
+      in_frontmatter && /^resolve_skills:$/ { skip_scripts=1; next }
+      in_frontmatter && /^list_domain_skills:$/ { skip_scripts=1; next }
       in_frontmatter && /^[a-zA-Z].*:/ && skip_scripts { skip_scripts=0 }
       in_frontmatter && skip_scripts && /^[[:space:]]/ { next }
       { print }
@@ -155,10 +189,40 @@ generate_claude_agents() {
       in_agent_scripts && /^[a-zA-Z]/ { in_agent_scripts=0 }
     ')
 
+    # Extract resolve_skills command if present
+    resolve_skills_command=$(printf '%s\n' "$file_content" | awk '
+      /^resolve_skills:$/ { in_section=1; next }
+      in_section && /^[[:space:]]*'"$script_variant"':[[:space:]]*/ {
+        sub(/^[[:space:]]*'"$script_variant"':[[:space:]]*/, "")
+        print
+        exit
+      }
+      in_section && /^[a-zA-Z]/ { in_section=0 }
+    ')
+
+    # Extract list_domain_skills command if present
+    list_domain_skills_command=$(printf '%s\n' "$file_content" | awk '
+      /^list_domain_skills:$/ { in_section=1; next }
+      in_section && /^[[:space:]]*'"$script_variant"':[[:space:]]*/ {
+        sub(/^[[:space:]]*'"$script_variant"':[[:space:]]*/, "")
+        print
+        exit
+      }
+      in_section && /^[a-zA-Z]/ { in_section=0 }
+    ')
+
     # Replace {SCRIPT} / {AGENT_SCRIPT} placeholders
     body=$(printf '%s\n' "$file_content" | sed "s|{SCRIPT}|${script_command}|g")
     if [[ -n $agent_script_command ]]; then
       body=$(printf '%s\n' "$body" | sed "s|{AGENT_SCRIPT}|${agent_script_command}|g")
+    fi
+
+    # Replace {RESOLVE_SKILLS} / {LIST_DOMAIN_SKILLS} placeholders
+    if [[ -n $resolve_skills_command ]]; then
+      body=$(printf '%s\n' "$body" | sed "s|{RESOLVE_SKILLS}|${resolve_skills_command}|g")
+    fi
+    if [[ -n $list_domain_skills_command ]]; then
+      body=$(printf '%s\n' "$body" | sed "s|{LIST_DOMAIN_SKILLS}|${list_domain_skills_command}|g")
     fi
 
     # Strip original frontmatter — keep only the body after the closing ---

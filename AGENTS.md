@@ -20,8 +20,9 @@ spec-kit/
 │   └── __init__.py        # Main CLI entry point — AGENT_CONFIG, init(), check(), version()
 ├── scripts/
 │   ├── bash/              # Bash scripts for feature creation, context update, common utilities
-│   ├── powershell/        # PowerShell equivalents of all bash scripts
-│   └── resolve-skills.py  # Phase-based skill resolver (reads .speckit.yaml)
+│   │   └── resolve-skills.sh   # Phase-based skill resolver (no Python required)
+│   └── powershell/        # PowerShell equivalents of all bash scripts
+│       └── resolve-skills.ps1  # Phase-based skill resolver for Windows
 ├── templates/
 │   ├── commands/          # Slash command templates (specify, clarify, plan, tasks, implement, converge, etc.)
 │   ├── instructions/      # Agent instruction templates
@@ -117,7 +118,7 @@ hooks:
       - Add Documentation State Matrix entries to plan.md
 ```
 
-**Skill Resolution**: `scripts/python/resolve-skills.py` discovers skills via `.speckit.yaml` configuration, matches phase hooks, sorts by priority, and injects content into LLM prompts.
+**Skill Resolution**: `scripts/bash/resolve-skills.sh` (Linux/macOS) and `scripts/powershell/resolve-skills.ps1` (Windows) discover skills via `.speckit.yaml` configuration, match phase hooks, sort by priority, and inject content into LLM prompts.
 
 ### Configuration (`.speckit.yaml`)
 
@@ -431,7 +432,7 @@ In the Spec-Driven Development (SDD) workflow, skills are considered the authori
 4. **Command validation**: Ensure generated commands work with the agent
 5. **Context update**: Test agent context update scripts
 6. **Branch naming**: Verify `create-new-feature.sh --type <type>` generates correct `type/###-name` branches
-7. **Skill resolution**: Test `resolve-skills.py` discovers and injects skills for all lifecycle phases
+7. **Skill resolution**: Test `resolve-skills.sh` / `resolve-skills.ps1` discovers and injects skills for all lifecycle phases
 
 ## Common Pitfalls
 

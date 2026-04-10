@@ -159,7 +159,7 @@ After a plan is created, this command analyzes the plan and related design docum
 
 This command executes all implementation tasks defined in `tasks.md`:
 
-1. **Skills Loading**: Runs `resolve-skills.py implement` to load the `speckit-developer` persona for this phase
+1. **Skills Loading**: Runs `resolve-skills.sh implement` to load the `speckit-developer` persona for this phase
 2. **Checklist Gate**: If checklists exist in `checklists/`, verifies they are all passing before proceeding
 3. **Context Loading**: Reads `tasks.md`, `plan.md`, and supporting documents (`data-model.md`, `contracts/`, etc.)
 4. **Task Execution**: Works through tasks in dependency order, following TDD — tests before implementation code
@@ -169,7 +169,7 @@ This command executes all implementation tasks defined in `tasks.md`:
 
 The final phase closes all documentation gaps and synchronizes project memory:
 
-1. **Skills Loading**: Runs `resolve-skills.py converge` to load the `speckit-librarian` persona
+1. **Skills Loading**: Runs `resolve-skills.sh converge` to load the `speckit-librarian` persona
 2. **Pre-condition Check**: Verifies all implementation tasks (above the CONVERGENCE_BOUNDARY) are complete; stops if not
 3. **Convergence Context**: Reads `plan.md` (Documentation State Matrix, Gap Analysis) and `memory/system-map.md`
 4. **Phase N Execution**: Creates/updates ADRs, updates architecture docs, synchronizes the System Map, and closes every flagged gap
@@ -513,7 +513,7 @@ Spec Kit v2 introduces a **Skills Architecture** that gives AI agents phase-spec
 
 ### How Skills Are Resolved
 
-The `scripts/resolve-skills.py` script is invoked automatically by each phase command. It:
+The `scripts/bash/resolve-skills.sh` (Linux/macOS) and `scripts/powershell/resolve-skills.ps1` (Windows) scripts are invoked automatically by each phase command. They:
 
 1. Reads `.speckit.yaml` (if present) to discover skill scan directories
 2. Scans for skills that match the current lifecycle phase via `speckit-adapter.yaml` hooks

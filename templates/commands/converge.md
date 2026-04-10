@@ -8,6 +8,9 @@ handoffs:
 scripts:
   sh: scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks
   ps: scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks
+resolve_skills:
+  sh: bash scripts/bash/resolve-skills.sh converge .
+  ps: pwsh scripts/powershell/resolve-skills.ps1 converge .
 ---
 
 ## User Input
@@ -22,7 +25,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 1. **Setup**: Run `{SCRIPT}` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute.
 
-2. **Load active skills**: Run `python3 scripts/resolve-skills.py converge .` from repo root and read the **entire output**. The skills returned are **MANDATORY** for this phase — you MUST adopt their personas and follow all workflow steps they define with highest priority. Do not simplify or skip any steps.
+2. **Load active skills**: Run `{RESOLVE_SKILLS}` from repo root and read the **entire output**. The skills returned are **MANDATORY** for this phase — you MUST adopt their personas and follow all workflow steps they define with highest priority. Do not simplify or skip any steps.
 
 3. **Locate Convergence Tasks**: Read `tasks.md` and find the `<!-- CONVERGENCE_BOUNDARY -->` marker.
    - Extract all tasks **below** the boundary (Phase N: System Convergence).
